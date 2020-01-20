@@ -3,7 +3,7 @@
 	"delta_tau_min": 0,
 	"delta_tau_max": 0,
 	"delta_dopp_min": 0,
-	"delta_dopp_max": 250,
+	"delta_dopp_max": 50,
 	"alpha_att_min": 0.5,
 	"alpha_att_max": 0.9,
 	"delta_phase": 0

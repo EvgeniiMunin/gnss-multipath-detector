@@ -82,7 +82,7 @@ class CorrDatasetV2():
         
         # Convert tau/ doppler deviation into pixel scale
         xk = int(x.mean() + delta_dopp / (x.max() - x.min()) * self.discr_size_fd)
-        yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code) - 1
+        yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code) 
         
         
         # Generate triangle/ sinc function
@@ -105,24 +105,27 @@ class CorrDatasetV2():
         mean = self.noise_model()[0]
         var = self.noise_model()[1]
         
+
+        module = np.sqrt(I**2 + Q**2)
         I += np.random.normal(mean, var, size=matrix.shape)
         Q += np.random.normal(mean, var, size=matrix.shape)
+       
+        #if ref_features:
+        #    print('check no normalization for reference')
+        #    I_norm = I[...,None]
+        #    Q_norm = Q[...,None]
+        #else:
+        I_norm = (I - module.min()) / (module.max() - module.min())
+        Q_norm = (Q - module.min()) / (module.max() - module.min())
+        #I_norm = I
+        #Q_norm = Q
+        #print('CHECK SCALE')
         
-        if ref_features:
-            print('check no normalization for reference')
-            I_norm = I[...,None]
-            Q_norm = Q[...,None]
-        else:
-            scaler = MinMaxScaler()
-            I_norm = scaler.fit_transform(I)
-            Q_norm = scaler.fit_transform(Q) 
-    
-            I_norm = I_norm[...,None]
-            Q_norm = Q_norm[...,None]
+        I_norm = I_norm[...,None]
+        Q_norm = Q_norm[...,None]
 
         matrix = np.concatenate((I_norm, Q_norm), axis=2)
-        module = I_norm**2 + Q_norm**2
-        
+       
         return matrix, module, xk, yk
 # -----------------------------------------------------------------------------
   

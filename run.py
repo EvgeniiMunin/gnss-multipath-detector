@@ -30,6 +30,11 @@ elif sys.argv[1] == '4':
 	os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 	discr_size_fd = 4
 	scale_code = 4
+elif sys.argv[1] == '32':
+	os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+	discr_size_fd = 32
+	scale_code = 32
+
 
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -55,14 +60,21 @@ K.set_session(sess)
 
 
 def main():
+        # Take into account integration time option
+	t_path = sys.argv[2]
+	if sys.argv[2] == '1':
+		Tint = 1e-3
+	elif sys.argv[2] == '20':
+		Tint = 20e-3
+
 	#%% Define const
-	Tint = 20e-3
-	w = 10**6 # correlator bandwidth
+	#Tint = 20e-3
+	#w = 10**6 # correlator bandwidth
 
 	#%% Read config files
 	
 	configs = []
-	allFiles = glob.glob("config_ti20/config_*.json") #config_dopp_ph0.json 
+	allFiles = glob.glob("config_ti{}/config_*.json".format(t_path)) #config_dopp_ph0.json 
 	for file_ in allFiles:
 		with open(file_) as json_config_file:
 			configs.append(json.load(json_config_file))
@@ -99,7 +111,7 @@ def main():
 									    delta_phase=delta_phase,
 									    alpha_att_interv=alpha_att,
 									    tau=tau, dopp=dopp,
-									    cn0_log=cn0_log, w=w)
+									    cn0_log=cn0_log)
 					else:
 						Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
 									    scale_code=scale_code,
@@ -110,7 +122,7 @@ def main():
 									    delta_phase=0,
 									    alpha_att_interv=alpha_att,
 									    tau=tau, dopp=dopp,
-									    cn0_log=cn0_log, w=w)
+									    cn0_log=cn0_log)
 					dataset_temp = Dataset.build(nb_samples=1000)
 					# Concatenate and shuffle arrays
 					dataset = np.concatenate((dataset, dataset_temp[0]), axis=0)                
@@ -128,7 +140,7 @@ def main():
 
 
 				# Define/ compile model
-				if sys.argv[1] == '40':
+				if sys.argv[1] == '40': #in ['40', '32']:
 					model = Model(shape=(X_train.shape[1], X_train.shape[2], X_train.shape[3]))
 				elif sys.argv[1] == '30':
 					model = Model(shape=(X_train.shape[1], X_train.shape[2], X_train.shape[3]))
@@ -166,7 +178,7 @@ def main():
 				history_dict = {k:[np.float64(i) for i in v] for k,v in history.history.items()}
 				logs = {'test_iter':test_iter, 'config':config, 'history':history_dict}
 				if test_iter == 0:
-					with open('logs_ti20/logs{}/output_cn0-{}_tau-{}-{}_dopp-{}-{}_phase-{}.json'.format(
+					with open('logs_ti{}/logs{}/output_cn0-{}_tau-{}-{}_dopp-{}-{}_phase-{}.json'.format(t_path,
 												discr_size_fd, cn0_log, 
 										                delta_tau[0], delta_tau[1],
 										               delta_dopp[0], delta_dopp[1],
@@ -174,7 +186,7 @@ def main():
 					    json.dump(logs, outfile)
 					    outfile.write('\n')
 				else:
-					with open('logs_ti20/logs{}/output_cn0-{}_tau-{}-{}_dopp-{}-{}_phase-{}.json'.format(
+					with open('logs_ti{}/logs{}/output_cn0-{}_tau-{}-{}_dopp-{}-{}_phase-{}.json'.format(t_path,
 												discr_size_fd, cn0_log, 
 										                delta_tau[0], delta_tau[1],
 										               delta_dopp[0], delta_dopp[1],

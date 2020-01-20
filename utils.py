@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import plotly as py
-import plotly.graph_objs as go
+#import plotly as py
+#import plotly.graph_objs as go
 #from plotly import plotly as ply
 
 def visualize_plt(data_sample):                                       

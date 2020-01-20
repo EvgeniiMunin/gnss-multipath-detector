@@ -109,7 +109,53 @@ for config_var in ['delta_phase', 'cn0']:
         sns_plot = sns.boxplot(x=config_var, y=metrics, hue='discr', data=df)
         plt.savefig("result_imgs/boxplot_var-{}_metrics-{}_combin.png".format(config_var, metrics))
 
-        
+#%% TI = 1 ms.  work models comparison by discretization level
+dfs = []
+folders = glob.glob("logs_ti1/logs*")
+discrs = []
+for folder in folders:
+    df_temp = json_to_df(folder + "/*.json")
+    
+    pos_substr = folder.find('\logs')
+    if folder[pos_substr+6 : pos_substr+7] == '0':
+        discr_level = int(folder[pos_substr+5 : pos_substr+7])
+        df_temp['discr'] = int(folder[pos_substr+5 : pos_substr+7])
+    else:
+        discr_level = int(folder[pos_substr+5 : pos_substr+6])
+        df_temp['discr'] = int(folder[pos_substr+5 : pos_substr+6])
+    dfs.append(df_temp)
+
+df = pd.concat(dfs, axis=0)
+df['val_acc'] = df['val_acc'] * 100
+ax = sns.boxplot(x='cn0', y='val_acc', hue='discr', data=df)
+
+# Boxplot
+#for config_var in ['delta_phase', 'cn0']:
+#    for metrics in ['val_acc', 'val_precision', 'val_recall']:
+#        plt.figure()
+#        ax = sns.factorplot(x=config_var, y=metrics, hue='discr', data=df, kind="bar")
+#        plt.ylim(0.97, 1)
+#        #ax.set(yscale = "log")
+#        plt.savefig("result_imgs/imgs_ti1/discr/barplot_var-{}_metrics-{}_combin.png".format(config_var, metrics))
+
+
+#%%
+config_var = 'cn0'
+metrics = 'val_acc'
+plt.figure()
+ax = sns.factorplot(x=config_var, y=metrics, hue='discr', data=df, kind="bar",  palette="Paired")
+plt.ylim(60, 100)
+#ax.set(yscale = "log")
+plt.savefig("result_imgs/imgs_ti1/barplot_var-{}_metrics-{}_combin.png".format(config_var, metrics))
+
+config_var = 'delta_phase'
+metrics = 'val_acc'
+plt.figure()
+ax = sns.factorplot(x=config_var, y=metrics, hue='discr', data=df, kind="bar", palette="Paired")
+plt.ylim(70, 100)
+#ax.set(yscale = "log")
+plt.savefig("result_imgs/imgs_ti1/barplot_var-{}_metrics-{}_combin.png".format(config_var, metrics))
+      
 
         
         
