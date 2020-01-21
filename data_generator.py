@@ -7,7 +7,7 @@ import numpy as np
 import math
 from scipy import signal
 import cv2
-from sklearn.preprocessing import MinMaxScaler
+#from sklearn.preprocessing import MinMaxScaler
 
 from reference_feature_extractor import FeatureExtractor
 
@@ -20,15 +20,14 @@ class CorrDatasetV2():
                delta_dopp_interv=None,
                delta_phase=0,
                alpha_att_interv=None,
-               tau=[0,2], dopp=[-1000,1000], cn0_log=50, w=10**6):
+               tau=[0,2], dopp=[-1000,1000], cn0_log=50):
     
         self.discr_size_fd = discr_size_fd
         self.scale_code = scale_code
         
         self.cn0_log = cn0_log # C/N0
         self.Tint = Tint
-        self.w = w # correlator bandwidth
-        self.b_rf = 10**6 # RF frontend bandwidth
+#        self.b_rf = 10**6 # RF frontend bandwidth
         
         self.multipath_option = multipath_option
         self.delta_tau_interv = delta_tau_interv
@@ -41,15 +40,8 @@ class CorrDatasetV2():
         # claculate SNR
         self.sign_amp = 1
         self.sign_power = 8 * self.sign_amp / self.Tint**2
-        self.cn0_log = cn0_log
-        self.snr_log = cn0_log - 10*np.log10(self.w)
-        self.snr = 10**(self.snr_log/10)
         self.noise_psd = self.sign_power / 10**(0.1*self.cn0_log)
         
-        # Define doppler and delay estimations fro integral
-        self.dopp_est = 1850 ## TO CHANGE
-        self.tau_est = 0.5 ## TO CHANGE 
-
     def sin_cos_matrix(self, multipath=False, delta_dopp=0, delta_phase=0, xk=0, yk=0):
         dopp_axis = np.linspace(start=self.dopp[0],
                                 stop=self.dopp[1],
@@ -117,6 +109,7 @@ class CorrDatasetV2():
         #else:
         I_norm = (I - module.min()) / (module.max() - module.min())
         Q_norm = (Q - module.min()) / (module.max() - module.min())
+        module = (module - module.min()) / (module.max() - module.min())
         #I_norm = I
         #Q_norm = Q
         #print('CHECK SCALE')
@@ -131,10 +124,10 @@ class CorrDatasetV2():
   
     def build(self, nb_samples=10, ref_features=False, sec_der=False, four_ch=False):
         data_samples = []
-        ref_data_samples = []
+#        ref_data_samples = []
         for i in range(nb_samples):
             data = {}
-            ref_data = {}
+#            ref_data = {}
               
             # Generate matrices: main, multipath
             if self.multipath_option:
@@ -157,6 +150,7 @@ class CorrDatasetV2():
                                                           ref_features=ref_features)
                 
             data['table'] = matrix
+            data['module'] = module[...,None]
             
             # Take into account 2nd derivative computation
             if sec_der:
@@ -171,35 +165,37 @@ class CorrDatasetV2():
                 data['label'] = 0
               
             data_samples.append(data)
+        
+        return data_samples
             
             # Compute reference features for given matrix
-            if ref_features:
-                feature_extractor = FeatureExtractor(module.squeeze())
-                ref_data['f2'] = feature_extractor.extract_f2()
-                ref_data['f3'] = feature_extractor.extract_f3(self.tau)
-                # Generate label
-                if self.multipath_option:
-                    ref_data['label'] = 1
-                else:
-                    ref_data['label'] = 0
-                ref_data_samples.append(ref_data)
+#            if ref_features:
+#                feature_extractor = FeatureExtractor(module.squeeze())
+#                ref_data['f2'] = feature_extractor.extract_f2()
+#                ref_data['f3'] = feature_extractor.extract_f3(self.tau)
+#                # Generate label
+#                if self.multipath_option:
+#                    ref_data['label'] = 1
+#                else:
+#                    ref_data['label'] = 0
+#                ref_data_samples.append(ref_data)
         
-        if self.multipath_option:
-            if ref_features:
-                self.data_samples = np.array(data_samples)
-                self.ref_data_samples = np.array(ref_data_samples)
-                return self.data_samples, self.ref_data_samples, module, delta_doppi, delta_taui, alpha_atti
-            else:
-                self.data_samples = np.array(data_samples)
-                return self.data_samples, module, delta_doppi, delta_taui, alpha_atti
-        else:
-            if ref_features:
-                self.data_samples = np.array(data_samples)
-                self.ref_data_samples = np.array(ref_data_samples)
-                return self.data_samples, self.ref_data_samples, module
-            else:
-                self.data_samples = np.array(data_samples)
-                return self.data_samples, module
+#        if self.multipath_option:
+##            if ref_features:
+##                self.data_samples = np.array(data_samples)
+##                self.ref_data_samples = np.array(ref_data_samples)
+##                return self.data_samples, self.ref_data_samples, module, delta_doppi, delta_taui, alpha_atti
+##            else:
+#            self.data_samples = np.array(data_samples)
+#            return self.data_samples, delta_doppi, delta_taui, alpha_atti
+#        else:
+##            if ref_features:
+##                self.data_samples = np.array(data_samples)
+##                self.ref_data_samples = np.array(ref_data_samples)
+##                return self.data_samples, self.ref_data_samples, module
+##            else:
+#            self.data_samples = np.array(data_samples)
+#            return self.data_samples
 
 def filter_2der(img, kernel_size):
     filt = np.array([1, -2, 1])[:, None]

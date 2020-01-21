@@ -3,6 +3,28 @@ import matplotlib.pyplot as plt
 #import plotly as py
 #import plotly.graph_objs as go
 #from plotly import plotly as ply
+import pickle
+
+def save_model(model, file_name):
+    """
+    Save model in pickle format
+    :param model: training model
+    :param file_name: String
+        Path to the model file
+    """
+    with open(file_name, 'wb') as file:
+        pickle.dump(model, file)
+        
+def load_model(file_name):
+    """
+    Load model from file
+    :param file_name: String
+        Path to the model file
+    :return: predictive model
+    """
+    with open(file_name, 'rb') as file:
+        return pickle.load(file)
+
 
 def visualize_plt(data_sample):                                       
     size0, size1 = data_sample.shape[0], data_sample.shape[1] 
