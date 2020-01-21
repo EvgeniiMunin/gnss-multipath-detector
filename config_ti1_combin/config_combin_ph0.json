@@ -2,8 +2,8 @@
 	"cn0_log": [20, 30, 40, 50, 60],
 	"delta_tau_min": 0.1,
 	"delta_tau_max": 0.8,
-	"delta_dopp_min": 0,
-	"delta_dopp_max": 1000,
+	"delta_dopp_min": -800,
+	"delta_dopp_max": 800,
 	"alpha_att_min": 0.5,
 	"alpha_att_max": 0.9,
 	"delta_phase": 0

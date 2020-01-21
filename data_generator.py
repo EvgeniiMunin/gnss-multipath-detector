@@ -76,6 +76,8 @@ class CorrDatasetV2():
         xk = int(x.mean() + delta_dopp / (x.max() - x.min()) * self.discr_size_fd)
         yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code) 
         
+        print('check deviations: ', xk, yk)
+        
         
         # Generate triangle/ sinc function
         func1 = self.sign_amp * signal.triang(self.scale_code)
@@ -87,9 +89,14 @@ class CorrDatasetV2():
         
         # Superpose 2 peaks. Weight matrix of MP peak by the matrix of principal peak 
         if multipath:
-            matrix = matrix[:matrix.shape[0]-xk, :matrix.shape[1]-yk]
+            if xk >= 0:
+                matrix = matrix[:matrix.shape[0]- xk, :matrix.shape[1]-yk]
+            else:
+                matrix = matrix[abs(xk):, :matrix.shape[1]-yk]
+            print('check mp matrix shape: ', matrix.shape)
         
         # Split matrices in I, Q channels
+        print('check cos shape: ', self.sin_cos_matrix(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0].shape)
         I = matrix * self.sin_cos_matrix(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0]
         Q = -matrix * self.sin_cos_matrix(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[1]
          
@@ -143,6 +150,8 @@ class CorrDatasetV2():
                                                          delta_phase=self.delta_phase,
                                                          alpha_att=alpha_atti,
                                                          ref_features=ref_features)
+                print('check x y: ', x, y)
+                print('check matrix shape: ', matrix.shape, matrix[x:, y:].shape, matrix_mp.shape)
                 matrix[x:, y:] = matrix[x:, y:] + matrix_mp
                 module[x:, y:] = module[x:, y:] + module_mp
             else:

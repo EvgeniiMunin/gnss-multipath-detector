@@ -52,7 +52,7 @@ print(configs[0])
 config = configs[0]
 
 tau = [0, 2]
-dopp = [-2500, 2500]
+dopp = [-2000, 2000]
 
 delta_tau = [config['delta_tau_min'], config['delta_tau_max']]
 delta_dopp = [config['delta_dopp_min'], config['delta_dopp_max']]
