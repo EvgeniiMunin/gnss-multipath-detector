@@ -53,8 +53,12 @@ class CorrDatasetV2():
         
         # reshape matrices in case of multipath
         if multipath:
-            cos_matrix = cos_matrix[:cos_matrix.shape[0]-xk, :cos_matrix.shape[1]-yk]
-            sin_matrix = sin_matrix[:sin_matrix.shape[0]-xk, :sin_matrix.shape[1]-yk]
+            if xk >= 0:
+                cos_matrix = cos_matrix[:cos_matrix.shape[0]-xk, :cos_matrix.shape[1]-yk]
+                sin_matrix = sin_matrix[:sin_matrix.shape[0]-xk, :sin_matrix.shape[1]-yk]
+            else:
+                cos_matrix = cos_matrix[abs(xk):, :cos_matrix.shape[1]-yk]
+                sin_matrix = sin_matrix[abs(xk):, :sin_matrix.shape[1]-yk]
         return cos_matrix, sin_matrix
             
     def noise_model(self):         
@@ -74,10 +78,7 @@ class CorrDatasetV2():
         
         # Convert tau/ doppler deviation into pixel scale
         xk = int(x.mean() + delta_dopp / (x.max() - x.min()) * self.discr_size_fd)
-        yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code) 
-        
-        print('check deviations: ', xk, yk)
-        
+        yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code)         
         
         # Generate triangle/ sinc function
         func1 = self.sign_amp * signal.triang(self.scale_code)
@@ -93,10 +94,8 @@ class CorrDatasetV2():
                 matrix = matrix[:matrix.shape[0]- xk, :matrix.shape[1]-yk]
             else:
                 matrix = matrix[abs(xk):, :matrix.shape[1]-yk]
-            print('check mp matrix shape: ', matrix.shape)
         
         # Split matrices in I, Q channels
-        print('check cos shape: ', self.sin_cos_matrix(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0].shape)
         I = matrix * self.sin_cos_matrix(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0]
         Q = -matrix * self.sin_cos_matrix(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[1]
          
@@ -104,7 +103,6 @@ class CorrDatasetV2():
         mean = self.noise_model()[0]
         var = self.noise_model()[1]
         
-
         module = np.sqrt(I**2 + Q**2)
         I += np.random.normal(mean, var, size=matrix.shape)
         Q += np.random.normal(mean, var, size=matrix.shape)
@@ -150,10 +148,13 @@ class CorrDatasetV2():
                                                          delta_phase=self.delta_phase,
                                                          alpha_att=alpha_atti,
                                                          ref_features=ref_features)
-                print('check x y: ', x, y)
-                print('check matrix shape: ', matrix.shape, matrix[x:, y:].shape, matrix_mp.shape)
-                matrix[x:, y:] = matrix[x:, y:] + matrix_mp
-                module[x:, y:] = module[x:, y:] + module_mp
+                if x >= 0:
+                    matrix[x:, y:] = matrix[x:, y:] + matrix_mp
+                    module[x:, y:] = module[x:, y:] + module_mp
+                else:
+                    matrix[:matrix.shape[0]-abs(x), y:] = matrix[:matrix.shape[0]-abs(x), y:] + matrix_mp
+                    module[:matrix.shape[0]-abs(x), y:] = module[:matrix.shape[0]-abs(x), y:] + module_mp
+                
             else:
                 matrix, module, x, y = self.generate_peak(delta_phase=self.delta_phase, 
                                                           ref_features=ref_features)

@@ -123,7 +123,7 @@ history = model.model.fit(
     epochs=train_iters,
     batch_size=batch_size
     )
-save_model(model.model, 'saved_models/sc1_data_gen_train.pkl')
+save_model(model.model, 'saved_models/sc1_data_gen_train_zoom.pkl')
 
 #%% fine tune model on sx3 data
 history_sx = model.model.fit(
@@ -133,7 +133,7 @@ history_sx = model.model.fit(
         epochs=train_iters,
         batch_size=batch_size
         )
-save_model(model.model, 'saved_models/sc2_fine_tune.pkl')
+save_model(model.model, 'saved_models/sc2_fine_tune_zoom.pkl')
 
 #%% Evaluate model on sx3 validation data
 
@@ -143,4 +143,16 @@ model.model.evaluate(
         batch_size=batch_size,
         verbose=1
         )
+
+#%% visually compare matrices
+import matplotlib.pyplot as plt
+
+n = np.random.randint(0, 100)
+
+plt.figure()
+print(y_train[n])
+plt.imshow(X_train[n,...,0])
+plt.figure()
+print(y_train_sx[n])
+plt.imshow(X_train_sx[n,...,0])
 
