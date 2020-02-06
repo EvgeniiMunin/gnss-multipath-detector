@@ -26,7 +26,7 @@
 
 % Note 2 : c'est seulement tout à la fin, en dehors de la boucle, qu'on ne 
 % conserve la correlation que sur N périodes complètes. Il serait peut être 
-% plus efficace de le faire au fur et à mesure, dans la boucle.
+% plus efficace de le faire au fur et à mesure, dans la boucle
 
 close all;
 
