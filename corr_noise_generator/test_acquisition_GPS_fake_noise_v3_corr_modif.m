@@ -1,6 +1,6 @@
-% Attention, on peut toujours tomber sur une partie du signal où
+% Attention, on peut toujours tomber sur une partie du signal oï¿½
 % il y a un changement de bit d'information. Donc le niveau de 
-% correlation ne sera pas optimal dans ce cas là si N > 1.
+% correlation ne sera pas optimal dans ce cas lï¿½ si N > 1.
 
 % Mode non-interactif, par exemple :
 % interactive = false;
@@ -14,16 +14,16 @@
 % Mode interactif
 % interactive = true, choice = 'debug', test_acquisition_GPS_fake_noise_v3_corr_modif
 
-% Note 1 : on prend N + 1 périodes d'intégration cohérente du signal, on calcule
+% Note 1 : on prend N + 1 pï¿½riodes d'intï¿½gration cohï¿½rente du signal, on calcule
 % la correlation avec un signal local qui en fait seulement N, puis on 
-% recommence avec les N + 1 périodes suivantes du signal. Soit un découpage du 
-% signal en tranches de N + 1, alors qu'on corrèle seulement sur N. Il serait 
-% plus intelligent de découper en tranches de N, avec recouvrement d'une 
-% période.
+% recommence avec les N + 1 pï¿½riodes suivantes du signal. Soit un dï¿½coupage du 
+% signal en tranches de N + 1, alors qu'on corrï¿½le seulement sur N. Il serait 
+% plus intelligent de dï¿½couper en tranches de N, avec recouvrement d'une 
+% pï¿½riode.
 
-% Note 2 : c'est seulement tout à la fin, en dehors de la boucle, qu'on ne 
-% conserve la correlation que sur N périodes complètes. Il serait peut être 
-% plus efficace de le faire au fur et à mesure, dans la boucle.
+% Note 2 : c'est seulement tout ï¿½ la fin, en dehors de la boucle, qu'on ne 
+% conserve la correlation que sur N pï¿½riodes complï¿½tes. Il serait peut ï¿½tre 
+% plus efficace de le faire au fur et ï¿½ mesure, dans la boucle.
 
 close all;
 
@@ -56,7 +56,7 @@ if (interactive == true)
       if_signal = true;
       path = 'C:\Users\blaisan\Downloads\'
       % path = 'C:\Users\blais\Downloads\';
-      % path = '~/Téléchargements/';
+      % path = '~/Tï¿½lï¿½chargements/';
       file = 'test_real_long.dat'
       file_name = [path,file];
       Fs = 23.104e6; Fif = 4.348e6; LO_offset = 0; sign_Q = 0;
@@ -177,19 +177,19 @@ endif
 % Sampling period
 Ts = 1/Fs;
 
-% Nombre de périodes de code d'intégration cohérente
-% La convolution se fera sur N + 1 périodes
+% Nombre de pï¿½riodes de code d'intï¿½gration cohï¿½rente
+% La convolution se fera sur N + 1 pï¿½riodes
 N = 1;
 
-% Nombre de sommations non-cohérentes
+% Nombre de sommations non-cohï¿½rentes
 M = 1;
 
 %----LES DONNEES---------------------------------------------------%
 
 % Number of samples of the signal we need
-% Pour une correlation avec N périodes de code, il faut prendre N + 1
-% périodes de signal pour être sûr d'avoir une superposition de N
-% périodes complètes de code.
+% Pour une correlation avec N pï¿½riodes de code, il faut prendre N + 1
+% pï¿½riodes de signal pour ï¿½tre sï¿½r d'avoir une superposition de N
+% pï¿½riodes complï¿½tes de code.
 Ns = (N + 1)*M*Nc/Fc*Fs;
 
 % We load the number of samples needed
@@ -241,7 +241,7 @@ switch file_format
   case {'debug'}
     % Le code PRN du signal
     code_PRN1 = cacodeAB(satNum,Fc,Fs);
-    % Code périodisé (N + 1)*M fois
+    % Code pï¿½riodisï¿½ (N + 1)*M fois
     code_debug = kron(ones(1,(N + 1)*M),code_PRN1);
     codeDelai = [code_debug(end - eps_c + 1:end) code_debug(1:end - eps_c)];
     tz = [0:length(codeDelai) - 1]/Fs;
@@ -277,7 +277,7 @@ voieQ = voieQ - mean(voieQ);
 % Le code PRN local
 code_PRN1 = cacodeAB(satNum,Fc,Fs);
 lC = length(code_PRN1);
-% Code périodisé sur une période d'intégration cohérente
+% Code pï¿½riodisï¿½ sur une pï¿½riode d'intï¿½gration cohï¿½rente
 code_PRN1_N = kron(ones(1,N),code_PRN1);
 lC_N = lC*N;
 
@@ -287,14 +287,14 @@ lI = length(voieI);
 
 %----L'ACQUISITION------------------------------------------------%
 
-% On résoud le problème de la convolution circulaire :
-% La longueur du signal sur une période d'intégration cohérente : N + 1.
-% On va lui rajouter N + 1 périodes de zéros et réaliser la convolution
+% On rï¿½soud le problï¿½me de la convolution circulaire :
+% La longueur du signal sur une pï¿½riode d'intï¿½gration cohï¿½rente : N + 1.
+% On va lui rajouter N + 1 pï¿½riodes de zï¿½ros et rï¿½aliser la convolution
 % circulaire sur 2*(N+1) points donc.
 lC_N_p1 = lC*(N + 1);
 lC_2N_p2 = 2*lC_N_p1;
 lC_N_p2 = lC*(N + 2);
-% On met le code local à la même longueur avec des zéros également.
+% On met le code local ï¿½ la mï¿½me longueur avec des zï¿½ros ï¿½galement.
 code_PRN1_2N_p2 = [code_PRN1_N zeros(1,lC_N_p2)];
 clear code_PRN1_N;
 
@@ -305,7 +305,7 @@ t = [0:lC_2N_p2 - 1]/Fs;
 % deltaDop = 1/(2*N*Nc/Fc);
 deltaDop = 100
 
-% Les fréquences de la réplique locale
+% Les frï¿½quences de la rï¿½plique locale
 fDop = [-2000:deltaDop:2000] - LO_offset + eps_f;
 lDop = length(fDop);
 
@@ -338,8 +338,8 @@ for i = [1:lDop]
 
   waitbar(i/lDop,h);
 
-  % Les répliques locales I (co) et Q (si) sont implicitement mises à zéros
-  % sur les N + 2 dernières périodes par code_PRN1_2N_p2
+  % Les rï¿½pliques locales I (co) et Q (si) sont implicitement mises ï¿½ zï¿½ros
+  % sur les N + 2 derniï¿½res pï¿½riodes par code_PRN1_2N_p2
   co = code_PRN1_2N_p2.*cos(2*pi*(Fif + fDop(i))*t);
   si = code_PRN1_2N_p2.*sin(2*pi*(Fif + fDop(i))*t);
   fft_PRN1I = fft(co);
@@ -348,7 +348,7 @@ for i = [1:lDop]
   % Non-coherent summations
   for k = [1:M]
     
-    % Le signal est complèté avec N + 1 périodes de zéros
+    % Le signal est complï¿½tï¿½ avec N + 1 pï¿½riodes de zï¿½ros
     fftI = fft([voieI(k*lC_N_p1:-1:1 + (k - 1)*lC_N_p1) zeros(1,lC_N_p1)]);
     if (if_signal == false)
       fftQ = fft([voieQ(k*lC_N_p1:-1:1 + (k - 1)*lC_N_p1) zeros(1,lC_N_p1)]);
@@ -376,7 +376,7 @@ for i = [1:lDop]
       % corrMod(i,:) += sqrt(corrModCos(i,:).^2 + corrModSin(i,:).^2);
       corrModcompl(i,:) += corrModcos(i,:) + j * corrModsin(i,:);
     else
-      'CHECK LOOP IF SIGNAL'
+      %'CHECK LOOP IF SIGNAL'
       corrModCos(i,:) = corrIco;
       corrModSin(i,:) = -corrIsi;
       corrMod(i,:) += corrIco.^2 + corrIsi.^2;
@@ -402,8 +402,8 @@ if (if_signal == false)
 endif
 clear corrMod;
 
-% On ne conserve que la partie correspondant à la correlation sur N périodes
-% complètes :
+% On ne conserve que la partie correspondant ï¿½ la correlation sur N pï¿½riodes
+% complï¿½tes :
 corrShift_t = corrShift(:,lC_N_p1:lC_N_p1 + lC_N - 1);
 if (if_signal == false)
   corrModCos_t = corrModCos(:,lC_N_p1:lC_N_p1 + lC_N - 1);
@@ -441,7 +441,7 @@ else
   fprintf(1,'Niveau Max de correlation = %f\n',corrMaxMax_compl);
 endif
   
-% L'excursion maximale en délai qui sera visualisée autour du pic :
+% L'excursion maximale en dï¿½lai qui sera visualisï¿½e autour du pic :
 tau_max = 2*Tc;    % Donc +- 2 chips autour du pic
 % Le nombre de points de correlation sur [0, tau_max]
 Np = ceil(tau_max*lC/(Nc*Tc));
@@ -459,7 +459,7 @@ endswitch
 clear corrMax corrMaxMax;
 
 if interactive == true
-  figure("name","Correlation au pic en fonction de l'écart de fréquence",...
+  figure("name","Correlation au pic en fonction de l'ï¿½cart de frï¿½quence",...
   "numbertitle","off");
   if (if_signal == false)
     subplot(1,4,1)
@@ -548,9 +548,11 @@ endif
 % WRITE DATA INTO .CSV FILE
 % get real part of complex number for voieI
 corr_out = real(corrModcompl_crop);
+'Check matrix size: ' 
+size(corr_out)
 write_csv = 1;
 if write_csv
-  file_path = strcat('corrModcompl_crop_',datestr(now, 'yyyy_MM_dd_HH_mm_ss'),'.csv')
+  file_path = strcat('outputs/corrModcompl_crop_',datestr(now, 'yyyy_MM_dd_HH_mm_ss'),'.csv')
   csvwrite(file_path, corr_out);
 endif
 

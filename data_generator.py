@@ -4,12 +4,13 @@
 #%autoreload 2
 
 import numpy as np
+import pandas as pd
 import math
 from scipy import signal
 import cv2
 #from sklearn.preprocessing import MinMaxScaler
 
-from reference_feature_extractor import FeatureExtractor
+#from reference_feature_extractor import FeatureExtractor
 
 class CorrDatasetV2():
   
@@ -42,7 +43,7 @@ class CorrDatasetV2():
         self.sign_power = 8 * self.sign_amp / self.Tint**2
         self.noise_psd = self.sign_power / 10**(0.1*self.cn0_log)
         
-    def sin_cos_matrix(self, multipath=False, delta_dopp=0, delta_phase=0, xk=0, yk=0):
+    def __sin_cos_matrix__(self, multipath=False, delta_dopp=0, delta_phase=0, xk=0, yk=0):
         dopp_axis = np.linspace(start=self.dopp[0],
                                 stop=self.dopp[1],
                                 num=self.discr_size_fd)
@@ -61,7 +62,7 @@ class CorrDatasetV2():
                 sin_matrix = sin_matrix[abs(xk):, :sin_matrix.shape[1]-yk]
         return cos_matrix, sin_matrix
             
-    def noise_model(self):         
+    def __noise_model__(self):         
         noise_corr_mean = 0
         noise_corr_std = math.sqrt(self.noise_psd * self.Tint / 16)
         
@@ -69,7 +70,7 @@ class CorrDatasetV2():
         return noise_corr_mean, noise_corr_std
    
     
-    def generate_peak(self, multipath=False, delta_dopp=0, delta_tau=0, delta_phase=0, alpha_att=1, ref_features=False):
+    def __generate_peak__(self, multipath=False, delta_dopp=0, delta_tau=0, delta_phase=0, alpha_att=1, ref_features=False):
         x = np.linspace(self.dopp[0], self.dopp[1], self.discr_size_fd)
         y = np.linspace(self.tau[0], self.tau[1], self.scale_code)
         
@@ -96,16 +97,16 @@ class CorrDatasetV2():
                 matrix = matrix[abs(xk):, :matrix.shape[1]-yk]
         
         # Split matrices in I, Q channels
-        I = matrix * self.sin_cos_matrix(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0]
-        Q = -matrix * self.sin_cos_matrix(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[1]
+        I = matrix * self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0]
+        Q = -matrix * self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[1]
          
         # Add noise model
-        mean = self.noise_model()[0]
-        var = self.noise_model()[1]
+        #mean = self.noise_model()[0]
+        #var = self.noise_model()[1]
         
         module = np.sqrt(I**2 + Q**2)
-        I += np.random.normal(mean, var, size=matrix.shape)
-        Q += np.random.normal(mean, var, size=matrix.shape)
+        #I += np.random.normal(mean, var, size=matrix.shape)
+        #Q += np.random.normal(mean, var, size=matrix.shape)
        
         #if ref_features:
         #    print('check no normalization for reference')
@@ -141,7 +142,7 @@ class CorrDatasetV2():
                 delta_doppi = np.random.uniform(low=self.delta_dopp_interv[0], high=self.delta_dopp_interv[1])
                 alpha_atti = np.random.uniform(low=self.alpha_att_interv[0], high=self.alpha_att_interv[1])
                 
-                matrix, module, x, y = self.generate_peak()
+                matrix, module, x, y = self.__generate_peak__()
                 matrix_mp, module_mp, x, y = self.generate_peak(multipath=self.multipath_option,
                                                          delta_dopp=delta_doppi, 
                                                          delta_tau=delta_taui,
@@ -156,7 +157,7 @@ class CorrDatasetV2():
                     module[:matrix.shape[0]-abs(x), y:] = module[:matrix.shape[0]-abs(x), y:] + module_mp
                 
             else:
-                matrix, module, x, y = self.generate_peak(delta_phase=self.delta_phase, 
+                matrix, module, x, y = self.__generate_peak__(delta_phase=self.delta_phase, 
                                                           ref_features=ref_features)
                 
             data['table'] = matrix
@@ -176,37 +177,38 @@ class CorrDatasetV2():
               
             data_samples.append(data)
         
-        return data_samples
-            
-            # Compute reference features for given matrix
-#            if ref_features:
-#                feature_extractor = FeatureExtractor(module.squeeze())
-#                ref_data['f2'] = feature_extractor.extract_f2()
-#                ref_data['f3'] = feature_extractor.extract_f3(self.tau)
-#                # Generate label
-#                if self.multipath_option:
-#                    ref_data['label'] = 1
-#                else:
-#                    ref_data['label'] = 0
-#                ref_data_samples.append(ref_data)
-        
-#        if self.multipath_option:
-##            if ref_features:
-##                self.data_samples = np.array(data_samples)
-##                self.ref_data_samples = np.array(ref_data_samples)
-##                return self.data_samples, self.ref_data_samples, module, delta_doppi, delta_taui, alpha_atti
-##            else:
-#            self.data_samples = np.array(data_samples)
-#            return self.data_samples, delta_doppi, delta_taui, alpha_atti
-#        else:
-##            if ref_features:
-##                self.data_samples = np.array(data_samples)
-##                self.ref_data_samples = np.array(ref_data_samples)
-##                return self.data_samples, self.ref_data_samples, module
-##            else:
-#            self.data_samples = np.array(data_samples)
-#            return self.data_samples
+        return np.array(data_samples)
 
+
+class FakeNoiseDataset:
+    def __init__(self, discr=(20,20)):
+        self.noise_data = []
+        self.discr = discr
+        
+    def __preprocess__(self, path):
+        a = pd.read_csv(path, sep=',', header=None).values
+        a = a[:, :a.shape[0]][:self.discr[0], :self.discr[1]]
+        return a
+    
+    def build(self, paths):
+        noise_data = []
+        for path in paths:
+            noise_matr = self.__preprocess__(path)
+            
+            # scale noise matrix
+            noise_matr = (noise_matr - noise_matr.min()) / (noise_matr.max() - noise_matr.min())
+            
+            noise_data.append(noise_matr)
+        return np.array(noise_data)    
+    
+# test FakeNoiseGenerator
+#import glob
+#
+#temp = FakeNoiseDataset()
+#paths = glob.glob('corr_noise_generator/outputs/*.csv')
+#noise_dataset = temp.build(paths)    
+
+        
 def filter_2der(img, kernel_size):
     filt = np.array([1, -2, 1])[:, None]
     img= cv2.medianBlur(np.float32(img), kernel_size)
