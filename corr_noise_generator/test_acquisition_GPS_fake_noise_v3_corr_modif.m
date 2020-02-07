@@ -29,6 +29,8 @@ close all;
 
 % Mode interactif ou non ?
 if exist("interactive","var") != 1 || (interactive == true)
+  interactive
+  choice
   'CHECK INTERACTIVE NOT EXIST'
   clear -x choice;
   %clear -x choice_fake;
@@ -547,14 +549,24 @@ endif
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % WRITE DATA INTO .CSV FILE
 % get real part of complex number for voieI
+'CHECK I_CHANNEL OPTION'
 corr_out = real(corrModcompl_crop);
+size(corr_out)
+write_csv = 1;
+if write_csv
+  file_path = strcat('outputs/i_channel/corrModcompl_crop_i_',datestr(now, 'yyyy_MM_dd_HH_mm_ss'),'.csv')
+  csvwrite(file_path, corr_out);
+endif
+
+'CHECK Q_CHANNEL OPTION'
+corr_out = imag(corrModcompl_crop);
 'Check matrix size: ' 
 size(corr_out)
 write_csv = 1;
 if write_csv
-  file_path = strcat('outputs/corrModcompl_crop_',datestr(now, 'yyyy_MM_dd_HH_mm_ss'),'.csv')
+  file_path = strcat('outputs/q_channel/corrModcompl_crop_q_',datestr(now, 'yyyy_MM_dd_HH_mm_ss'),'.csv')
   csvwrite(file_path, corr_out);
 endif
 
-%clear t corrShift;
-%clear corrShift_t corrModCos_t corrModSin_t;
+clear t corrShift;
+clear corrShift_t corrModCos_t corrModSin_t;
