@@ -38,7 +38,7 @@ class CorrDatasetV2():
         self.tau = tau
         self.dopp = dopp
         
-        # claculate SNR
+        # calculate SNR
         self.sign_amp = 1
         self.sign_power = 8 * self.sign_amp / self.Tint**2
         self.noise_psd = self.sign_power / 10**(0.1*self.cn0_log)
