@@ -6,21 +6,8 @@ import datetime
 #from keras.utils import to_categorical
 #from tqdm import tqdm, tqdm_notebook
 
-#%% Import modules
+# Import modules
 from data_generator import CorrDatasetV2, FakeNoiseDataset
-#from utils import visualize_plt#, visualize_3d_discr
-#from model import Model 
-
-#discr_size_fd = 20
-#scale_code = 20
-#tau = [0, 2]
-#dopp = [-2000, 2000]
-#delta_tau = [0.1, 0.8]
-#delta_dopp = [-1000, 1000]
-#delta_phase = 0
-#alpha_att = [0.5, 0.9]
-#Tint = 1e-3
-#cn0_log=30
 
 class DataSampler:
     
@@ -46,33 +33,35 @@ class DataSampler:
         self.Tint = Tint
         self.cn0_log = cn0_log
     
-    def read_noise(self, paths, noise_factor=0.5):
+    def read_noise(self, i_path, q_path, nb_samples=13, noise_factor=0.5):
         fake_noise_generator = FakeNoiseDataset()
         # read i channel 
-        paths = glob.glob('corr_noise_generator/outputs/i_channel/*.csv')
-        self.noise_i_samples = fake_noise_generator.build(paths)
+        # paths = glob.glob('corr_noise_generator/outputs/i_channel/*.csv')
+        paths = glob.glob(i_path)
+        self.noise_i_samples = fake_noise_generator.build(paths[:nb_samples])
         self.noise_i_samples *= noise_factor
-        
+
         # read q channel
-        paths = glob.glob('corr_noise_generator/outputs/q_channel/*.csv')
-        self.noise_q_samples = fake_noise_generator.build(paths)
+        # paths = glob.glob('corr_noise_generator/outputs/q_channel/*.csv')
+        paths = glob.glob(q_path)
+        self.noise_q_samples = fake_noise_generator.build(paths[:nb_samples])
         self.noise_q_samples *= noise_factor   
         #return noise_i_samples, noise_q_samples
     
-    def generate_corr(self, config, nb_samples=13, multipath_option=False):
+    def generate_corr(self, nb_samples=13, multipath_option=False):
         # no_mp/ mp option
         Dataset = CorrDatasetV2(discr_size_fd=self.discr_size_fd,
                             scale_code=self.scale_code,
                             Tint=self.Tint,
                             multipath_option=multipath_option,
-                            delta_tau_interv=self.delta_tau, 
-                            delta_dopp_interv=self.delta_dopp,
+                            delta_tau_interv=self.delta_tau_interv, 
+                            delta_dopp_interv=self.delta_dopp_interv,
                             delta_phase=self.delta_phase,
-                            alpha_att_interv=self.alpha_att,
+                            alpha_att_interv=self.alpha_att_interv,
                             tau=self.tau, dopp=self.dopp,
                             cn0_log=self.cn0_log)
         
-        samples = Dataset.build(nb_samples=13)
+        samples = Dataset.build(nb_samples=nb_samples)
         # extract separately I,Q channels
         sample_i_func = lambda x: x['table'][...,0]
         sample_q_func = lambda x: x['table'][...,1]
@@ -80,12 +69,17 @@ class DataSampler:
         self.q_samples = np.array(list(map(sample_q_func, samples)))
         #return i_samples, q_samples
     
-    def sum_matr(self, noise_tuple, sign_tuple):
+    def sum_matr(self):
         #noise_i_samples, noise_q_samples = noise_tuple
         #i_samples, q_samples = sign_tuple
         
         # check matrices shapes
         try:
+            # check correspondance among arrays shapes
+            if len(set([self.i_samples.shape, self.q_samples.shape, self.noise_i_samples.shape, self.noise_q_samples.shape])) > 1:
+                print('Wrong arrays shapes. ValueError exception')
+                raise ValueError
+            
             matr_i = np.sum([self.i_samples, self.noise_i_samples], axis=0)
             matr_q = np.sum([self.q_samples, self.noise_q_samples], axis=0)
             
@@ -99,5 +93,6 @@ class DataSampler:
                 np.savetxt(path, matr_q[i,...], delimiter=',')
                 
         except ValueError:
-            print('Matrices shapes are not corresponding: ', self.i_samples.shape, self.noise_i_samples.shape)
+            print('Wrong arrays shapes: sampels: {}, {}; noise samples {}, {}'.format(self.i_samples.shape, self.q_samples.shape, 
+                                                                                                         self.noise_i_samples.shape, self.noise_q_samples.shape))
             
