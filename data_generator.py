@@ -73,21 +73,33 @@ class CorrDatasetV2():
     def __generate_peak__(self, multipath=False, delta_dopp=0, delta_tau=0, delta_phase=0, alpha_att=1, ref_features=False):
         x = np.linspace(self.dopp[0], self.dopp[1], self.discr_size_fd)
         y = np.linspace(self.tau[0], self.tau[1], self.scale_code)
+        # define linspace just for triangle (2 chips wide)
+        y_triang = np.linspace(0, 2, 20) + 0.5
+        print('check y_triang', y_triang)
         
         # Create empty matrix for peaks
         matrix = np.zeros((self.discr_size_fd, self.scale_code))
+        matrix_tr = np.zeros((self.discr_size_fd, self.scale_code // 2))
         
         # Convert tau/ doppler deviation into pixel scale
         xk = int(x.mean() + delta_dopp / (x.max() - x.min()) * self.discr_size_fd)
-        yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code)         
+        yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code)
+        #yk_triang = int(y_triang.mean() + delta_tau / (y_triang.max() - y_triang.min()) * (self.scale_code // 2))
+        #print(yk)
+        #print('check yk_triang: ', yk_triang)
+        
         
         # Generate triangle/ sinc function
-        func1 = self.sign_amp * signal.triang(self.scale_code)
+        func1 = self.sign_amp * signal.triang(self.scale_code // 2)
         func2 = self.sign_amp * np.sinc((x + delta_dopp) * self.Tint)
+        print('check shapes: ', func1.shape, func2.shape)
         
         # Only 1 principal peak
         for i, point in enumerate(func2):
-            matrix[i] = alpha_att * func1 * point
+            matrix_tr[i] = alpha_att * func1 * point
+        print('check shapes matrix: ', matrix_tr.shape, matrix.shape)
+        # sum matrix_tr and matrix of background according interval offset
+        matrix[:, 5:(self.scale_code // 2 + 5)] = matrix_tr
         
         # Superpose 2 peaks. Weight matrix of MP peak by the matrix of principal peak 
         if multipath:

@@ -33,8 +33,8 @@ class DataSampler:
         self.Tint = Tint
         self.cn0_log = cn0_log
     
-    def read_noise(self, i_path, q_path, nb_samples=13, noise_factor=0.5):
-        fake_noise_generator = FakeNoiseDataset()
+    def read_noise(self, i_path, q_path, matrix_shape, nb_samples=13, noise_factor=0.5):
+        fake_noise_generator = FakeNoiseDataset(discr=matrix_shape)
         # read i channel 
         # paths = glob.glob('corr_noise_generator/outputs/i_channel/*.csv')
         paths = glob.glob(i_path)

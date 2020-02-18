@@ -21,18 +21,51 @@ from model import Model
 
 #%%
 # Main for data generation 
-discr_size_fd = 20
-scale_code = 20
-tau = [0, 2]
-dopp = [-2000, 2000]
+discr_size_fd = 40
+scale_code = 40
 delta_tau = [0.1, 0.8]
 delta_dopp = [-1000, 1000]
 delta_phase = 0
 alpha_att = [0.5, 0.9]
+cn0_log=50
+
+# define intervals
+# chip rate/ period of PRN code
+Fc = 1.023e6
+Tc = 1/Fc
+Nc = 1023
+Fs = 20e6
+# coherent integration period
 Tint = 1e-3
-cn0_log=30
+# doppler interval
+dopp_max = min(5.5/Tint, 800+2.5/Tint)
+dopp_interval = [-dopp_max, dopp_max]
+# length of local PRN code
+lC = 20000
+# code intervals
+tau_interval = [-3/2, 5/2]
+tau_prime_interval = [0, 4]
+#tau_max_left = Tc
+#tau_max_right = 2.5 * Tc
 
 #%% Check CorrDataset
+Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
+                        scale_code=scale_code,
+                        Tint=Tint,
+                        multipath_option=False,
+                        delta_tau_interv=delta_tau, 
+                        delta_dopp_interv=delta_dopp,
+                        delta_phase=delta_phase,
+                        alpha_att_interv=alpha_att,
+                        tau=tau_prime_interval, 
+                        dopp=dopp_interval,
+                        cn0_log=cn0_log)
+
+samples = Dataset.build(nb_samples=1)
+visualize_plt(samples[0]['table'][...,0])
+visualize_plt(samples[0]['module'][...,0])
+
+#%% Check CorrDataset generation for multipath case
 Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
                         scale_code=scale_code,
                         Tint=Tint,

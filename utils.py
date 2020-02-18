@@ -34,16 +34,16 @@ def visualize_plt(data_sample):
     plt.show()
 
     # Plot 3D
-    fig = plt.figure()
-    x = np.linspace(0, size0-1, size0)
-    y = np.linspace(0, size1-1, size1)
-    print(len(x), len(y))
-    print(data_sample.shape)
+    #fig = plt.figure()
+    #x = np.linspace(0, size0-1, size0)
+    #y = np.linspace(0, size1-1, size1)
+    #print(len(x), len(y))
+    #print(data_sample.shape)
     #ax = Axes3D(fig)
-    ax = fig.gca(projection='3d')
-    cset = ax.contour3D(x, y, data_sample, 800)
-    ax.clabel(cset, fontsize=9, inline=1)
-    plt.show()
+    #ax = fig.gca(projection='3d')
+    #cset = ax.contour3D(x, y, data_sample, 800)
+    #ax.clabel(cset, fontsize=9, inline=1)
+    #plt.show()
 
 
 def visualize_3d_discr(func, 
