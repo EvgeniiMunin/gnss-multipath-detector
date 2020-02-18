@@ -11,10 +11,10 @@
 % if_signal = false;
 % for satNum = [1:32], satNum, test_acquisition_GPS, end
 
-close all;
+%close all;
 
 % Mode interactif
-interactive = true, choice = 4
+%interactive = true, choice = 4
 %test_acquisition_GPS_fake_noise_v3_corr_modif
 
 % Note 1 : on prend N + 1 p�riodes d'int�gration coh�rente du signal, on calcule
@@ -33,7 +33,7 @@ if exist("interactive","var") != 1 || (interactive == true)
   interactive
   choice
   'CHECK INTERACTIVE NOT EXIST'
-  clear -x choice;
+  %clear -x choice;
   %clear -x choice_fake;
   interactive = true;
   if exist("choice","var") != 1
@@ -46,28 +46,6 @@ else
 endif
 
 %addpath './Sub_Functions/';
-
-%----LES CONSTANTES GPS--------------------------------------------%
-
-FL1 = 1575.42e6;
-Fc = 1.023e6; Tc = 1/Fc;
-Nc = 1023;
-
-% AXIS ON DOPPLER/ CODE
-% L'excursion Doppler maximale
-dopp_max = 1000;
-% Le pas en fr�quence, en Hz
-% dopp_step = 10;
-
-% Le pas de recherche du Doppler
-% deltaDop = 1/(2*N*Nc/Fc);
-deltaDop = 100
-
-% L'excursion maximale en d�lai qui sera visualis�e autour du pic :
-tau_max = 2*Tc;    % Donc +- 2 chips autour du pic
-% Le nombre de points de correlation sur [0, tau_max]
-Np = 100;
-
 
 if (interactive == true)
   switch choice
@@ -142,13 +120,15 @@ if (interactive == true)
       % Code delay, in samples
       eps_c = round(eps_c*Fs);
     case {4}
+      'CHECK CASE 4 STREAM'
+      'CHECK SAT PRN'
+      satNum
       if_signal = true;
       path = './Data/';
       file = 'SwRxData-191113145928_Band0_FE0_ANT0_f1575420000.stream' # no MP 
       file_name = [path,file];
       Fs = 20e6; Fif = 5000445.89; LO_offset = 0; sign_Q = +1;
       file_format = 'stream';
-      satNum =  1; eps_c = 0.332e-3; eps_f = 1750;
       
     case {5}
       if_signal = true;
@@ -196,13 +176,6 @@ endif
 % Sampling period
 Ts = 1/Fs;
 
-% Nombre de p�riodes de code d'int�gration coh�rente
-% La convolution se fera sur N + 1 p�riodes
-N = 1;
-
-% Nombre de sommations non-coh�rentes
-M = 1;
-
 %----LES DONNEES---------------------------------------------------%
 
 % Number of samples of the signal we need
@@ -211,16 +184,19 @@ M = 1;
 % p�riodes compl�tes de code.
 Ns = (N + 1)*M*Nc/Fc*Fs;
 
-file_list = ['SwRxData-191113145928_Band0_FE0_ANT0_f1575420000.stream';
-             'SwRxData-191113151614_Band0_FE0_ANT0_f1575420000.stream';
-             'SwRxData-191113154206_Band0_FE0_ANT0_f1575420000.stream'];
+%file_list = ['SwRxData-191113145928_Band0_FE0_ANT0_f1575420000.stream';
+%             'SwRxData-191113151614_Band0_FE0_ANT0_f1575420000.stream';
+%             'SwRxData-191113154206_Band0_FE0_ANT0_f1575420000.stream'];
 
+file_list = ['SwRxData-191113145928_Band0_FE0_ANT0_f1575420000.stream'];
+             
+             
 % parse through .stream files
 for file_number = [1:size(file_list)(1)]
 	file = file_list(file_number, :)
 	
 	% partition .stream file
-	for start_time = [1: 400000: 8000000]
+	for start_time = [1: partition_step: partition_max]
 		% We load the number of samples needed
 		switch file_format
 		  case {'old'}
@@ -304,9 +280,6 @@ for file_number = [1:size(file_list)(1)]
 		voieI = voieI - mean(voieI);
 		voieQ = voieQ - mean(voieQ);
 
-		% Le code PRN local
-		code_PRN1 = cacodeAB(satNum,Fc,Fs);
-		lC = length(code_PRN1);
 		% Code p�riodis� sur une p�riode d'int�gration coh�rente
 		code_PRN1_N = kron(ones(1,N),code_PRN1);
 		lC_N = lC*N;
@@ -331,8 +304,10 @@ for file_number = [1:size(file_list)(1)]
 		% Le temps qui correspond
 		t = [0:lC_2N_p2 - 1]/Fs;
 
+    % --------------------------------------------------------------------------
+    % Define intervals
 		% Les fr�quences de la r�plique locale
-		fDop = [-2000:deltaDop:2000] - LO_offset + eps_f;
+		fDop = dopp_interv - LO_offset + eps_f;
 		lDop = length(fDop);
 
 		co = zeros(1,lC_2N_p2);
@@ -442,57 +417,20 @@ for file_number = [1:size(file_list)(1)]
 		fprintf(1,'Retard = %f ms\n',t(indT)/1e-3-floor(t(indT)/1e-3));
 		fprintf(1,'Doppler = %f Hz\n',fDop(indDop(indT)) + LO_offset);
 		fprintf(1,'Niveau Max de correlation = %f\n',corrMaxMax);
-
-		% Compute CN0 value
-		Ti = N * 10^-3;
-		% Power of the noise on the I channel
-		P_r = mean(mean(corrShift_t));
-		N0 = P_r*Ti;
-		%CN0_dB = 10.0*log10(corrMaxMax/N*1023/N0);
-		CN0_dB = 10.0*log10(corrMaxMax/N0);
-		fprintf(1,'CN0_dB = %f\n', CN0_dB);
-
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		% Compute maximum indT for corrModcompl
-		corrModcompl_t = corrModcompl(:,lC_N_p1:lC_N_p1 + lC_N - 1);
-		[corrMax_compl, indDop_compl] = max(abs(corrModcompl_t));
-		[corrMaxMax_compl,indT_compl] = max(corrMax_compl);
-
-		noise_only = 0;
-		if noise_only
-		  indDop_compl = ones(1,size(indDop_compl)(2)) * length(corrMax_compl) / 2 ;
-		else
-		  fprintf(1,'Retard = %f ms\n',t(indT_compl)/1e-3-floor(t(indT_compl)/1e-3));
-		  fprintf(1,'Doppler = %f Hz\n',fDop(indDop_compl(indT_compl)) + LO_offset);
-		  fprintf(1,'Niveau Max de correlation = %f\n',corrMaxMax_compl);
-		endif
-		  
-		% L'excursion maximale en d�lai qui sera visualis�e autour du pic :
-		tau_max = 2*Tc;    % Donc +- 2 chips autour du pic
-		% Le nombre de points de correlation sur [0, tau_max]
-		Np = ceil(tau_max*lC/(Nc*Tc));
     
     % compute corrShift_c for output in .csv
-		corrShift_c = corrShift_t(:,indT-Np+1: indT+Np );		
+		code_interv = indT-Np_left+1: indT+Np_right;
+    corrShift_c = corrShift_t(:, code_interv);		
 		corrShift_c = corrShift_c / corrMaxMax;		
     
-		% Compute correlation of noise
-    choice_fake = false
-		switch choice_fake
-		  case('fake_noise')
-		    'CHECK CROP FOR FAKE NOISE'
-		    corrModcompl_crop = corrModcompl_t(:,size(corrModcompl_t)(2) / 2 - Np + 1:size(corrModcompl_t)(2) / 2 + Np);
-		  otherwise
-		    corrModcompl_crop = corrModcompl_t(:,indT_compl - Np + 1:indT_compl + Np);
-		endswitch
 		%z = xcorr(corrModcompl_crop);
 
 
 		clear corrMax corrMaxMax;
 
 		if interactive == true
-		  figure("name","Correlation au pic en fonction de l'�cart de fr�quence",...
-		  "numbertitle","off");
+		  %figure("name","Correlation au pic en fonction de l'�cart de fr�quence",...
+		  %"numbertitle","off");
 		  if (if_signal == false)
 		    %subplot(1,4,1)
 		    %plot(fDop,z(:,indT)); grid on;
@@ -558,8 +496,8 @@ for file_number = [1:size(file_list)(1)]
 		  if plot_corrMod_corr 
 		    figure();
 		    %[x,y] = meshgrid(t_plot,fDop + LO_offset);
-		    [x,y] = meshgrid([1:size(corrModcompl_crop)(2)], [1:size(corrModcompl_crop)(1)]);
-		    mesh(x,y,abs(corrModcompl_crop));
+		    [x,y] = meshgrid([1:size(corrShift_c)(2)], [1:size(corrShift_c)(1)]);
+		    mesh(x,y,abs(corrShift_c));
 		    xlabel('s'); ylabel('Hz'); zlabel('Correlation');
 		    title(sprintf('Satellite %i',satNum));
 		    
@@ -601,7 +539,6 @@ for file_number = [1:size(file_list)(1)]
 		else
 			'CHECK WRITE SX3 CSV'
 			corr_out = corrShift_c;
-			write_csv = 1;
 		      
 			nom1 = file_list(file_number,[10:21])
 			nom2 = '_slice_['
