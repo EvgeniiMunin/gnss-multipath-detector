@@ -74,8 +74,8 @@ class CorrDatasetV2():
         x = np.linspace(self.dopp[0], self.dopp[1], self.discr_size_fd)
         y = np.linspace(self.tau[0], self.tau[1], self.scale_code)
         # define linspace just for triangle (2 chips wide)
-        y_triang = np.linspace(0, 2, 20) + 0.5
-        print('check y_triang', y_triang)
+        #y_triang = np.linspace(0, 2, 20) + 0.5
+        #print('check y_triang', y_triang)
         
         # Create empty matrix for peaks
         matrix = np.zeros((self.discr_size_fd, self.scale_code))
@@ -84,10 +84,10 @@ class CorrDatasetV2():
         # Convert tau/ doppler deviation into pixel scale
         xk = int(x.mean() + delta_dopp / (x.max() - x.min()) * self.discr_size_fd)
         yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code)
+        
         #yk_triang = int(y_triang.mean() + delta_tau / (y_triang.max() - y_triang.min()) * (self.scale_code // 2))
         #print(yk)
         #print('check yk_triang: ', yk_triang)
-        
         
         # Generate triangle/ sinc function
         func1 = self.sign_amp * signal.triang(self.scale_code // 2)
@@ -103,10 +103,14 @@ class CorrDatasetV2():
         
         # Superpose 2 peaks. Weight matrix of MP peak by the matrix of principal peak 
         if multipath:
+            print('check xk, yk: ', xk, yk)
             if xk >= 0:
-                matrix = matrix[:matrix.shape[0]- xk, :matrix.shape[1]-yk]
+                matrix = matrix[:matrix.shape[0]-xk, :matrix.shape[1]-yk]
             else:
                 matrix = matrix[abs(xk):, :matrix.shape[1]-yk]
+        
+        print('check shapes matrix after mp adjustment: ', matrix_tr.shape, matrix.shape)
+        
         
         # Split matrices in I, Q channels
         I = matrix * self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0]
@@ -155,7 +159,7 @@ class CorrDatasetV2():
                 alpha_atti = np.random.uniform(low=self.alpha_att_interv[0], high=self.alpha_att_interv[1])
                 
                 matrix, module, x, y = self.__generate_peak__()
-                matrix_mp, module_mp, x, y = self.generate_peak(multipath=self.multipath_option,
+                matrix_mp, module_mp, x, y = self.__generate_peak__(multipath=self.multipath_option,
                                                          delta_dopp=delta_doppi, 
                                                          delta_tau=delta_taui,
                                                          delta_phase=self.delta_phase,

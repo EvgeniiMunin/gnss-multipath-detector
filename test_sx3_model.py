@@ -19,8 +19,8 @@ from model import Model
 from utils import save_model, load_model
 
 #%% prepare sx3 data
-dataset_mp = SX3Dataset(label=1, global_path='sx3_data/sx3_dataset/Courbes_multipath/*')
-dataset_nomp = SX3Dataset(label=0, global_path='sx3_data/sx3_dataset/Courbes_all/*')
+dataset_mp = SX3Dataset(label=1, global_path='sx3_data/outputs/mp/*')
+dataset_nomp = SX3Dataset(label=0, global_path='sx3_data/outputs/no_mp/*')
 
 data_mp = dataset_mp.build()
 data_nomp = dataset_nomp.build()[:500]

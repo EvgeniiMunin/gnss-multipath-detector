@@ -2,7 +2,6 @@ import numpy as np
 
 #import json
 import glob
-import datetime
 #from keras.utils import to_categorical
 #from tqdm import tqdm, tqdm_notebook
 
@@ -69,7 +68,7 @@ class DataSampler:
         self.q_samples = np.array(list(map(sample_q_func, samples)))
         #return i_samples, q_samples
     
-    def sum_matr(self):
+    def sum_matr(self, pathi, pathq):
         #noise_i_samples, noise_q_samples = noise_tuple
         #i_samples, q_samples = sign_tuple
         
@@ -85,12 +84,9 @@ class DataSampler:
             
             # save matrix into csv
             for i in range(matr_i.shape[0]):
-                # save i_channel
-                path = r'synth_data/no_mp/channel_i_{}.csv'.format(str(datetime.datetime.now()))
-                np.savetxt(path, matr_i[i,...], delimiter=',')
-                # save q_channel
-                path = r'synth_data/no_mp/channel_q_{}.csv'.format(str(datetime.datetime.now()))
-                np.savetxt(path, matr_q[i,...], delimiter=',')
+                # save i/q_channel
+                np.savetxt(pathi, matr_i[i,...], delimiter=',')
+                np.savetxt(pathq, matr_q[i,...], delimiter=',')
                 
         except ValueError:
             print('Wrong arrays shapes: sampels: {}, {}; noise samples {}, {}'.format(self.i_samples.shape, self.q_samples.shape, 
