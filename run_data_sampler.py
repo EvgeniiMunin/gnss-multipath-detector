@@ -3,7 +3,6 @@
 #%load_ext autoreload
 #%autoreload 2
 import argparse
-import datetime
 from data_sampler import DataSampler
 
 def main():
@@ -41,14 +40,10 @@ def main():
     tau_interval = [-3/2, 5/2]
     tau_prime_interval = [0, 4]
     
-    print('MODS IN INTERVALS CHECKED')    
+    print('MODS IN INTERVALS CHECKED')  
     
     noise_i_path = r'corr_noise_generator/outputs/i_channel/*.csv'
     noise_q_path = r'corr_noise_generator/outputs/q_channel/*.csv'
-    
-    datetime_now = datetime.datetime.now()
-    pathi = r'synth_data/no_mp/channel_i_{}.csv'.format(str(datetime_now))
-    pathq = r'synth_data/no_mp/channel_q_{}.csv'.format(str(datetime_now))
     
     data_sampler = DataSampler(
                 discr_size_fd=discr_size_fd,
@@ -64,9 +59,9 @@ def main():
                 cn0_log=cn0_log
             )
     
-    data_sampler.read_noise(noise_i_path, noise_q_path, matrix_shape=(discr_size_fd, scale_code), nb_samples=args.nb_samples, noise_factor=0.5)
-    data_sampler.generate_corr(nb_samples=args.nb_samples, multipath_option=multipath_option)
-    data_sampler.sum_matr(pathi, pathq)
+    data_sampler.read_noise(noise_i_path, noise_q_path, matrix_shape=(discr_size_fd, scale_code), nb_samples=int(args.nb_samples), noise_factor=0.5)
+    data_sampler.generate_corr(nb_samples=int(args.nb_samples), multipath_option=multipath_option)
+    data_sampler.sum_matr()
 
 if __name__ == '__main__':
     main()

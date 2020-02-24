@@ -6,6 +6,7 @@ import glob
 #from tqdm import tqdm, tqdm_notebook
 
 # Import modules
+import datetime
 from data_generator import CorrDatasetV2, FakeNoiseDataset
 
 class DataSampler:
@@ -31,6 +32,7 @@ class DataSampler:
         
         self.Tint = Tint
         self.cn0_log = cn0_log
+        self.multipath_option = multipath_option
     
     def read_noise(self, i_path, q_path, matrix_shape, nb_samples=13, noise_factor=0.5):
         fake_noise_generator = FakeNoiseDataset(discr=matrix_shape)
@@ -52,7 +54,7 @@ class DataSampler:
         Dataset = CorrDatasetV2(discr_size_fd=self.discr_size_fd,
                             scale_code=self.scale_code,
                             Tint=self.Tint,
-                            multipath_option=multipath_option,
+                            multipath_option=self.multipath_option,
                             delta_tau_interv=self.delta_tau_interv, 
                             delta_dopp_interv=self.delta_dopp_interv,
                             delta_phase=self.delta_phase,
@@ -68,23 +70,40 @@ class DataSampler:
         self.q_samples = np.array(list(map(sample_q_func, samples)))
         #return i_samples, q_samples
     
-    def sum_matr(self, pathi, pathq):
+    def sum_matr(self):
         #noise_i_samples, noise_q_samples = noise_tuple
         #i_samples, q_samples = sign_tuple
         
         # check matrices shapes
+        
         try:
             # check correspondance among arrays shapes
-            if len(set([self.i_samples.shape, self.q_samples.shape, self.noise_i_samples.shape, self.noise_q_samples.shape])) > 1:
+            if (self.i_samples.shape[1] != self.noise_i_samples.shape[1]) or (self.i_samples.shape[2] != self.noise_i_samples.shape[2]):
                 print('Wrong arrays shapes. ValueError exception')
                 raise ValueError
+            
+            if self.i_samples.shape[0] != self.noise_i_samples.shape[0]:
+                print('Nb samples correction: ', self.i_samples.shape, self.noise_i_samples.shape)
+                min_nb_samples = min(self.i_samples.shape[0], self.noise_i_samples.shape[0])
+                self.i_samples = self.i_samples[:min_nb_samples,...]
+                self.q_samples = self.q_samples[:min_nb_samples,...]
+                self.noise_i_samples = self.noise_i_samples[:min_nb_samples,...]
+                self.noise_q_samples = self.noise_q_samples[:min_nb_samples,...]
             
             matr_i = np.sum([self.i_samples, self.noise_i_samples], axis=0)
             matr_q = np.sum([self.q_samples, self.noise_q_samples], axis=0)
             
             # save matrix into csv
+            print('check matr_i shape: ', matr_i.shape)
             for i in range(matr_i.shape[0]):
+                datetime_now = datetime.datetime.now()
                 # save i/q_channel
+                if self.multipath_option:
+                    pathi = r'synth_data/mp/channel_i_{}.csv'.format(str(datetime_now))
+                    pathq = r'synth_data/mp/channel_q_{}.csv'.format(str(datetime_now))    
+                else:
+                    pathi = r'synth_data/no_mp/channel_i_{}.csv'.format(str(datetime_now))
+                    pathq = r'synth_data/no_mp/channel_q_{}.csv'.format(str(datetime_now))
                 np.savetxt(pathi, matr_i[i,...], delimiter=',')
                 np.savetxt(pathq, matr_q[i,...], delimiter=',')
                 

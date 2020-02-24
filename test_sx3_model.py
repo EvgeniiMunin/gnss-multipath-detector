@@ -3,6 +3,7 @@ import autoreload
 %autoreload 2
 
 import numpy as np
+import pandas as pd
 from keras import layers
 from keras import models
 from keras import optimizers
@@ -38,69 +39,38 @@ y_train_sx = np.array([x['label'] for x in data_train])
 y_val_sx = np.array([x['label'] for x in data_val])
 
 #%% prepare data generator data
-discr_size_fd = 40
-scale_code = 40
-Tint = 2e-3
+global_path_mp_i = 'synth_data/mp/*_i_*'
+global_path_mp_q = 'synth_data/mp/*_q_*'
+global_path_nomp_i = 'synth_data/no_mp/*_i_*'
+global_path_nomp_q = 'synth_data/no_mp/*_q_*'
+paths_mp_i = sorted(glob.glob(global_path_mp_i))
+paths_mp_q = sorted(glob.glob(global_path_mp_q))
+paths_nomp_i = sorted(glob.glob(global_path_nomp_i))
+paths_nomp_q = sorted(glob.glob(global_path_nomp_q))
 
-configs = []
-#allFiles = glob.glob("config_ti{}/config_*.json".format(t_path)) #config_dopp_ph0.json 
-#for file_ in allFiles:
-file_ = "config_ti1_combin/config_combin_ph0.json"
-with open(file_) as json_config_file:
-    configs.append(json.load(json_config_file))
-print(configs[0])
-config = configs[0]
-
-tau = [0, 2]
-dopp = [-2000, 2000]
-
-delta_tau = [config['delta_tau_min'], config['delta_tau_max']]
-delta_dopp = [config['delta_dopp_min'], config['delta_dopp_max']]
-alpha_att = [config['alpha_att_min'], config['alpha_att_max']]
-delta_phase = config['delta_phase'] * np.pi / 180
-cn0_logs = config['cn0_log']
-cn0_log = cn0_logs[3]
-
-dataset = np.array([])
-for multipath_option in [True, False]:
-    # Build dataset for default branch
-    if multipath_option:
-        Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
-									    scale_code=scale_code,
-									    Tint=Tint,
-									    multipath_option=multipath_option,
-									    delta_tau_interv=delta_tau, 
-									    delta_dopp_interv=delta_dopp,
-									    delta_phase=delta_phase,
-									    alpha_att_interv=alpha_att,
-									    tau=tau, dopp=dopp,
-									    cn0_log=cn0_log)
-    else:
-        Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
-									    scale_code=scale_code,
-									    Tint=Tint,
-									    multipath_option=multipath_option,
-									    delta_tau_interv=delta_tau, 
-									    delta_dopp_interv=delta_dopp,
-									    delta_phase=0,
-									    alpha_att_interv=alpha_att,
-									    tau=tau, dopp=dopp,
-									    cn0_log=cn0_log)
-    dataset_temp = Dataset.build(nb_samples=1000)
-    # Concatenate and shuffle arrays
-    dataset = np.concatenate((dataset, dataset_temp), axis=0)
+synth_data_samples = []
+synth_data_labels = []
+for path_mp_i, path_mp_q in zip(paths_mp_i, paths_mp_q):
+    matr_i = pd.read_csv(path_mp_i, sep=',', header=None).values
+    matr_q = pd.read_csv(path_mp_q, sep=',', header=None).values
+    matr = matr_i**2 + matr_q**2
+    synth_data_samples.append(matr)
+    synth_data_labels.append(1)
     
-np.random.shuffle(dataset)
-data_train, data_val = train_test_split(dataset, test_size=0.2)
+for path_nomp_i, path_nomp_q in zip(paths_nomp_i, paths_nomp_q):
+    matr_i = pd.read_csv(path_nomp_i, sep=',', header=None).values
+    matr_q = pd.read_csv(path_nomp_q, sep=',', header=None).values
+    matr = matr_i**2 + matr_q**2
+    synth_data_samples.append(matr)
+    synth_data_labels.append(0)
 
-X_train = np.array([x['module'] for x in data_train])
-X_val = np.array([x['module'] for x in data_val])
+synth_data_samples = np.array(synth_data_samples)[...,None]
+synth_data_labels = np.array(synth_data_labels)
 
-y_train = np.array([x['label'] for x in data_train])
-y_val = np.array([x['label'] for x in data_val])
+X_train_synth, X_val_synth, y_train_synth, y_val_synth = train_test_split(synth_data_samples, synth_data_labels, test_size=0.2, shuffle=True)
 
 #%% Define model.
-model = Model(shape=(X_train.shape[1], X_train.shape[2], X_train.shape[3]))
+model = Model(shape=(X_train_synth.shape[1], X_train_synth.shape[2], X_train_synth.shape[3]))
 
 batch_size = 16
 train_iters = 10
@@ -117,13 +87,13 @@ model.model.compile(loss='binary_crossentropy',
 
 #%% Train model: pretrain on data gen
 history = model.model.fit(
-    x=X_train,
-    y=y_train,
-    validation_data=(X_val, y_val),
+    x=X_train_synth,
+    y=y_train_synth,
+    validation_data=(X_val_synth, y_val_synth),
     epochs=train_iters,
     batch_size=batch_size
     )
-save_model(model.model, 'saved_models/sc1_data_gen_train_zoom.pkl')
+#save_model(model.model, 'saved_models/sc1_data_gen_train_zoom.pkl')
 
 #%% fine tune model on sx3 data
 history_sx = model.model.fit(
@@ -133,7 +103,7 @@ history_sx = model.model.fit(
         epochs=train_iters,
         batch_size=batch_size
         )
-save_model(model.model, 'saved_models/sc2_fine_tune_zoom.pkl')
+#save_model(model.model, 'saved_models/sc2_fine_tune_zoom.pkl')
 
 #%% Evaluate model on sx3 validation data
 
@@ -147,11 +117,11 @@ model.model.evaluate(
 #%% visually compare matrices
 import matplotlib.pyplot as plt
 
-n = np.random.randint(0, 100)
+n = np.random.randint(0, 10)
 
 plt.figure()
-print(y_train[n])
-plt.imshow(X_train[n,...,0])
+print(y_train_synth[n])
+plt.imshow(X_train_synth[n,...,0])
 plt.figure()
 print(y_train_sx[n])
 plt.imshow(X_train_sx[n,...,0])

@@ -25,32 +25,29 @@
 % conserve la correlation que sur N p�riodes compl�tes. Il serait peut �tre 
 % plus efficace de le faire au fur et � mesure, dans la boucle.
 
-close all;
+%close all;
+
+% LOAD CURRENT WORKSPACE FROM FILE
+load('current_workspace')
 
 % Mode interactif ou non ?
 if exist("interactive","var") != 1 || (interactive == true)
   interactive
   choice
   'CHECK INTERACTIVE NOT EXIST'
-  clear -x choice;
+  %clear -x choice;
   %clear -x choice_fake;
   interactive = true;
   if exist("choice","var") != 1
     choice = 1;
   endif
 else
-  clear -x file_name Fs Fif LO_offset sign_Q file_format if_signal satNum;
+  %clear -x file_name Fs Fif LO_offset sign_Q file_format if_signal satNum;
   interactive = false;
   choice = 0;
 endif
 
 %addpath './Sub_Functions/';
-
-%----LES CONSTANTES GPS--------------------------------------------%
-
-FL1 = 1575.42e6;
-Fc = 1.023e6; Tc = 1/Fc;
-Nc = 1023;
 
 if (interactive == true)
   switch choice
@@ -131,7 +128,7 @@ if (interactive == true)
       file_name = [path,file];
       Fs = 20e6; Fif = 5000445.89; LO_offset = 0; sign_Q = +1;
       file_format = 'stream';
-      satNum =  1;
+      satNum = 1;
       
     case {5}
       if_signal = true;
@@ -140,7 +137,7 @@ if (interactive == true)
       file_name = [path,file];
       Fs = 20e6; Fif = 5000445.89; LO_offset = 0; sign_Q = +1;
       file_format = 'stream';
-      satNum =  28;
+      satNum = 28;
     otherwise
       error("Invalid choice");
   endswitch
@@ -178,13 +175,6 @@ endif
     
 % Sampling period
 Ts = 1/Fs;
-
-% Nombre de p�riodes de code d'int�gration coh�rente
-% La convolution se fera sur N + 1 p�riodes
-N = 1;
-
-% Nombre de sommations non-coh�rentes
-M = 1;
 
 %----LES DONNEES---------------------------------------------------%
 
@@ -276,9 +266,6 @@ voieQ = sign_Q*voieQ;
 voieI = voieI - mean(voieI);
 voieQ = voieQ - mean(voieQ);
 
-% Le code PRN local
-code_PRN1 = cacodeAB(satNum,Fc,Fs);
-lC = length(code_PRN1);
 % Code p�riodis� sur une p�riode d'int�gration coh�rente
 code_PRN1_N = kron(ones(1,N),code_PRN1);
 lC_N = lC*N;
@@ -297,18 +284,18 @@ lC_N_p1 = lC*(N + 1);
 lC_2N_p2 = 2*lC_N_p1;
 lC_N_p2 = lC*(N + 2);
 % On met le code local � la m�me longueur avec des z�ros �galement.
-code_PRN1_2N_p2 = [code_PRN1_N zeros(1,lC_N_p2)];
-clear code_PRN1_N;
+%code_PRN1_2N_p2 = [code_PRN1_N zeros(1,lC_N_p2)];
+code_PRN1_2N_p2 = [code_PRN1_N zeros(1,lC_2N_p2 - size(code_PRN1_N)(2))];  % MOD VECTOR SIZE HERE
+%clear code_PRN1_N;
 
 % Le temps qui correspond
 t = [0:lC_2N_p2 - 1]/Fs;
 
-% Le pas de recherche du Doppler
-% deltaDop = 1/(2*N*Nc/Fc);
-deltaDop = 100
+% --------------------------------------------------------------------------
+% Define intervals
 
 % Les fr�quences de la r�plique locale
-fDop = [-2000:deltaDop:2000] - LO_offset + eps_f;
+fDop = dopp_interv - LO_offset + eps_f;
 lDop = length(fDop);
 
 co = zeros(1,lC_2N_p2);
@@ -419,15 +406,6 @@ fprintf(1,'Retard = %f ms\n',t(indT)/1e-3-floor(t(indT)/1e-3));
 fprintf(1,'Doppler = %f Hz\n',fDop(indDop(indT)) + LO_offset);
 fprintf(1,'Niveau Max de correlation = %f\n',corrMaxMax);
 
-% Compute CN0 value
-Ti = N * 10^-3;
-% Power of the noise on the I channel
-P_r = mean(mean(corrShift_t));
-N0 = P_r*Ti;
-%CN0_dB = 10.0*log10(corrMaxMax/N*1023/N0);
-CN0_dB = 10.0*log10(corrMaxMax/N0);
-fprintf(1,'CN0_dB = %f\n', CN0_dB);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Compute maximum indT for corrModcompl
 corrModcompl_t = corrModcompl(:,lC_N_p1:lC_N_p1 + lC_N - 1);
@@ -461,22 +439,22 @@ endswitch
 clear corrMax corrMaxMax;
 
 if interactive == true
-  figure("name","Correlation au pic en fonction de l'�cart de fr�quence",...
-  "numbertitle","off");
+  %figure("name","Correlation au pic en fonction de l'�cart de fr�quence",...
+  %"numbertitle","off");
   if (if_signal == false)
-    subplot(1,4,1)
-    plot(fDop,z(:,indT)); grid on;
-    xlabel('Hz'); title('Correlation voie I');
-    subplot(1,4,2)
-    plot(fDop,corrModSin_t(:,indT)); grid on;
-    xlabel('Hz'); title('Correlation voie Q');
-    subplot(1,4,3)
-    plot(fDop,corrShift_t(:,indT)); grid on;
-    xlabel('Hz'); title('Somme des correlations I^2 + Q^2');
-    subplot(1,4,4)
-    t_plot = [0:lC_N - 1]/Fs;
-    plot(t_plot,corrShift_t(indDop(indT),:)); grid on;
-    xlabel('s'); title('Somme des correlations I^2 + Q^2');
+    %subplot(1,4,1)
+    %plot(fDop,z(:,indT)); grid on;
+    %xlabel('Hz'); title('Correlation voie I');
+    %subplot(1,4,2)
+    %plot(fDop,corrModSin_t(:,indT)); grid on;
+    %xlabel('Hz'); title('Correlation voie Q');
+    %subplot(1,4,3)
+    %plot(fDop,corrShift_t(:,indT)); grid on;
+    %xlabel('Hz'); title('Somme des correlations I^2 + Q^2');
+    %subplot(1,4,4)
+    %t_plot = [0:lC_N - 1]/Fs;
+    %plot(t_plot,corrShift_t(indDop(indT),:)); grid on;
+    %xlabel('s'); title('Somme des correlations I^2 + Q^2');
   else
     %subplot(1,2,1)
     %plot(fDop,corrShift_t(:,indT)); grid on;
@@ -552,7 +530,6 @@ endif
 'CHECK I_CHANNEL OPTION'
 corr_out = real(corrModcompl_crop);
 size(corr_out)
-write_csv = 1;
 if write_csv
   file_path = strcat('outputs/i_channel/corrModcompl_crop_i_',datestr(now, 'yyyy_MM_dd_HH_mm_ss'),'.csv')
   csvwrite(file_path, corr_out);
@@ -562,7 +539,6 @@ endif
 corr_out = imag(corrModcompl_crop);
 'Check matrix size: ' 
 size(corr_out)
-write_csv = 1;
 if write_csv
   file_path = strcat('outputs/q_channel/corrModcompl_crop_q_',datestr(now, 'yyyy_MM_dd_HH_mm_ss'),'.csv')
   csvwrite(file_path, corr_out);

@@ -517,12 +517,10 @@ for file_number = [1:size(file_list)(1)]
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		% WRITE DATA INTO .CSV FILE
 		% get real part of complex number for voieI
-		write_csv = 1;
 		if choice_fake = false
 			'CHECK I_CHANNEL OPTION'
 			corr_out = real(corrModcompl_crop);
 			size(corr_out)
-			write_csv = 1;
 			if write_csv
 			  file_path = strcat('outputs/i_channel/corrModcompl_crop_i_',datestr(now, 'yyyy_MM_dd_HH_mm_ss'),'.csv')
 			  csvwrite(file_path, corr_out);
