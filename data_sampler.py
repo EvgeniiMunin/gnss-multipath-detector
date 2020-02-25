@@ -34,22 +34,39 @@ class DataSampler:
         self.cn0_log = cn0_log
         self.multipath_option = multipath_option
     
-    def read_noise(self, i_path, q_path, matrix_shape, nb_samples=13, noise_factor=0.5):
+        # compute cn0 form cn0_log
+        self.cn0 = 10**(0.1*self.cn0_log)
+        
+    def read_noise(self, i_path, q_path, matrix_shape, nb_samples=13):
         fake_noise_generator = FakeNoiseDataset(discr=matrix_shape)
-        # read i channel 
-        # paths = glob.glob('corr_noise_generator/outputs/i_channel/*.csv')
+        
+        # read i channel
         paths = glob.glob(i_path)
         self.noise_i_samples = fake_noise_generator.build(paths[:nb_samples])
-        self.noise_i_samples *= noise_factor
-
         # read q channel
-        # paths = glob.glob('corr_noise_generator/outputs/q_channel/*.csv')
         paths = glob.glob(q_path)
         self.noise_q_samples = fake_noise_generator.build(paths[:nb_samples])
-        self.noise_q_samples *= noise_factor   
-        #return noise_i_samples, noise_q_samples
+        
+        # compute noise factor
+        p = (self.noise_i_samples[0]**2 + self.noise_q_samples[0]**2).max()
+        var_i = np.var(self.noise_i_samples[0])
+        var_q = np.var(self.noise_q_samples[0])
+        noise_factor_i = np.sqrt(p / (2 * var_i * self.Tint * self.cn0))
+        noise_factor_q = np.sqrt(p / (2 * var_q * self.Tint * self.cn0))
+        
+        print('check matrix min/max before factor: ', self.noise_i_samples.min(), self.noise_i_samples.max())
+        print('check noise factor: ', noise_factor_i, noise_factor_q)
+        print('check terms: ', p, var_i, self.Tint, self.cn0)
+        
+        # apply noise factor
+        # paths = glob.glob('corr_noise_generator/outputs/i_channel/*.csv')
+        # paths = glob.glob('corr_noise_generator/outputs/q_channel/*.csv')
+        self.noise_i_samples *= noise_factor_i
+        self.noise_q_samples *= noise_factor_q 
+        
+        print('check matrix min/max after factor: ', self.noise_i_samples.min(), self.noise_i_samples.max())
     
-    def generate_corr(self, nb_samples=13, multipath_option=False):
+    def generate_corr(self, nb_samples=13):
         # no_mp/ mp option
         Dataset = CorrDatasetV2(discr_size_fd=self.discr_size_fd,
                             scale_code=self.scale_code,
@@ -68,9 +85,8 @@ class DataSampler:
         sample_q_func = lambda x: x['table'][...,1]
         self.i_samples = np.array(list(map(sample_i_func, samples)))
         self.q_samples = np.array(list(map(sample_q_func, samples)))
-        #return i_samples, q_samples
     
-    def sum_matr(self):
+    def sum_matr(self, save_csv=True):
         #noise_i_samples, noise_q_samples = noise_tuple
         #i_samples, q_samples = sign_tuple
         
@@ -93,19 +109,24 @@ class DataSampler:
             matr_i = np.sum([self.i_samples, self.noise_i_samples], axis=0)
             matr_q = np.sum([self.q_samples, self.noise_q_samples], axis=0)
             
+            print('check matrix min/max: ', self.i_samples.min(), self.q_samples.max(), self.noise_i_samples.min(), self.noise_q_samples.max())
+            
             # save matrix into csv
-            print('check matr_i shape: ', matr_i.shape)
-            for i in range(matr_i.shape[0]):
-                datetime_now = datetime.datetime.now()
-                # save i/q_channel
-                if self.multipath_option:
-                    pathi = r'synth_data/mp/channel_i_{}.csv'.format(str(datetime_now))
-                    pathq = r'synth_data/mp/channel_q_{}.csv'.format(str(datetime_now))    
-                else:
-                    pathi = r'synth_data/no_mp/channel_i_{}.csv'.format(str(datetime_now))
-                    pathq = r'synth_data/no_mp/channel_q_{}.csv'.format(str(datetime_now))
-                np.savetxt(pathi, matr_i[i,...], delimiter=',')
-                np.savetxt(pathq, matr_q[i,...], delimiter=',')
+            if save_csv:
+                print('check matr_i shape: ', matr_i.shape)
+                for i in range(matr_i.shape[0]):
+                    datetime_now = datetime.datetime.now()
+                    # save i/q_channel
+                    if self.multipath_option:
+                        pathi = r'synth_data/mp/channel_i_{}.csv'.format(str(datetime_now))
+                        pathq = r'synth_data/mp/channel_q_{}.csv'.format(str(datetime_now))    
+                    else:
+                        pathi = r'synth_data/no_mp/channel_i_{}.csv'.format(str(datetime_now))
+                        pathq = r'synth_data/no_mp/channel_q_{}.csv'.format(str(datetime_now))
+                    np.savetxt(pathi, matr_i[i,...], delimiter=',')
+                    np.savetxt(pathq, matr_q[i,...], delimiter=',')
+            else:
+                return matr_i, matr_q
                 
         except ValueError:
             print('Wrong arrays shapes: sampels: {}, {}; noise samples {}, {}'.format(self.i_samples.shape, self.q_samples.shape, 

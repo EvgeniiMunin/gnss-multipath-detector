@@ -15,6 +15,7 @@ import datetime
 
 #%% Import modules
 from data_generator import CorrDatasetV2, FakeNoiseDataset
+from data_sampler import DataSampler
 from utils import visualize_plt#, visualize_3d_discr
 from model import Model 
 
@@ -23,10 +24,10 @@ from model import Model
 # Main for data generation 
 discr_size_fd = 40
 scale_code = 40
-delta_tau = [0.1, 0.8]
-delta_dopp = [-1000, 1000]
+delta_tau_interv = [0.1, 0.8]
+delta_dopp_interv = [-1000, 1000]
 delta_phase = 0
-alpha_att = [0.5, 0.9]
+alpha_att_interv = [0.5, 0.9]
 cn0_log=50
 
 # define intervals
@@ -104,7 +105,31 @@ samples = Dataset.build(nb_samples=13)
 #visualize_plt(samples[0]['table'][...,1])
 #visualize_plt(module)
 
-#%% Check FakeNoiseDataset
+#%% check fake noise factor in data sampler 
+noise_i_path = r'corr_noise_generator/outputs/i_channel/*.csv'
+noise_q_path = r'corr_noise_generator/outputs/q_channel/*.csv'
+
+data_sampler = DataSampler(
+                discr_size_fd=discr_size_fd,
+                scale_code=scale_code,
+                Tint=Tint,
+                multipath_option=False,
+                delta_tau_interv=delta_tau_interv, 
+                delta_dopp_interv=delta_dopp_interv,
+                delta_phase=delta_phase,
+                alpha_att_interv=alpha_att_interv,
+                tau=tau_interval, 
+                dopp=dopp_interval,
+                cn0_log=cn0_log
+            )
+
+nb_samples = 1
+data_sampler.read_noise(noise_i_path, noise_q_path, matrix_shape=(discr_size_fd, scale_code), nb_samples=nb_samples)
+data_sampler.generate_corr(nb_samples=nb_samples)
+matr_i, matr_q = data_sampler.sum_matr(save_csv=False)
+
+plt.imshow(matr_i[0,...])
+#%% check FakeNoiseDataset
 import glob
 
 noise_factor = 0.5

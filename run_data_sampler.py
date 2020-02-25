@@ -60,7 +60,7 @@ def main():
             )
     
     data_sampler.read_noise(noise_i_path, noise_q_path, matrix_shape=(discr_size_fd, scale_code), nb_samples=int(args.nb_samples), noise_factor=0.5)
-    data_sampler.generate_corr(nb_samples=int(args.nb_samples), multipath_option=multipath_option)
+    data_sampler.generate_corr(nb_samples=int(args.nb_samples))
     data_sampler.sum_matr()
 
 if __name__ == '__main__':
