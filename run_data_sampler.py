@@ -13,7 +13,8 @@ def main():
     parser.add_argument('--nb_samples', required=True, default=1)
     args = parser.parse_args()
     
-    multipath_option = False if args.mp == 0 else True
+    multipath_option = False if args.mp == '0' else True
+    print('check multipath option before sampling: ', args.mp, multipath_option)
     
     discr_size_fd = 40
     scale_code = 40
@@ -59,9 +60,9 @@ def main():
                 cn0_log=cn0_log
             )
     
-    data_sampler.read_noise(noise_i_path, noise_q_path, matrix_shape=(discr_size_fd, scale_code), nb_samples=int(args.nb_samples), noise_factor=0.5)
+    data_sampler.read_noise(noise_i_path, noise_q_path, matrix_shape=(discr_size_fd, scale_code), nb_samples=int(args.nb_samples))
     data_sampler.generate_corr(nb_samples=int(args.nb_samples))
-    data_sampler.sum_matr()
+    data_sampler.sum_matr(save_csv=True)
 
 if __name__ == '__main__':
     main()

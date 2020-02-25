@@ -109,24 +109,26 @@ samples = Dataset.build(nb_samples=13)
 noise_i_path = r'corr_noise_generator/outputs/i_channel/*.csv'
 noise_q_path = r'corr_noise_generator/outputs/q_channel/*.csv'
 
-data_sampler = DataSampler(
-                discr_size_fd=discr_size_fd,
-                scale_code=scale_code,
-                Tint=Tint,
-                multipath_option=False,
-                delta_tau_interv=delta_tau_interv, 
-                delta_dopp_interv=delta_dopp_interv,
-                delta_phase=delta_phase,
-                alpha_att_interv=alpha_att_interv,
-                tau=tau_interval, 
-                dopp=dopp_interval,
-                cn0_log=cn0_log
-            )
-
-nb_samples = 1
-data_sampler.read_noise(noise_i_path, noise_q_path, matrix_shape=(discr_size_fd, scale_code), nb_samples=nb_samples)
-data_sampler.generate_corr(nb_samples=nb_samples)
-matr_i, matr_q = data_sampler.sum_matr(save_csv=False)
+for cn0_log in [20, 30, 40, 50, 60]:
+    print('----', cn0_log)
+    data_sampler = DataSampler(
+                    discr_size_fd=discr_size_fd,
+                    scale_code=scale_code,
+                    Tint=Tint,
+                    multipath_option=False,
+                    delta_tau_interv=delta_tau_interv, 
+                    delta_dopp_interv=delta_dopp_interv,
+                    delta_phase=delta_phase,
+                    alpha_att_interv=alpha_att_interv,
+                    tau=tau_interval, 
+                    dopp=dopp_interval,
+                    cn0_log=cn0_log
+                )
+    
+    nb_samples = 1
+    data_sampler.read_noise(noise_i_path, noise_q_path, matrix_shape=(discr_size_fd, scale_code), nb_samples=nb_samples)
+    data_sampler.generate_corr(nb_samples=nb_samples)
+    matr_i, matr_q = data_sampler.sum_matr(save_csv=False)
 
 plt.imshow(matr_i[0,...])
 #%% check FakeNoiseDataset

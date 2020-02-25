@@ -1,4 +1,4 @@
-# Created by Octave 4.2.2, Mon Feb 24 16:11:25 2020 CET <evgenii@munin>
+# Created by Octave 4.2.2, Tue Feb 25 17:06:39 2020 CET <evgenii@munin>
 # name: FL1
 # type: scalar
 1575420000
@@ -102,7 +102,7 @@ debug
 
 # name: nb_realiz
 # type: scalar
-5
+10
 
 
 # name: satNum

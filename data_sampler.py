@@ -113,6 +113,7 @@ class DataSampler:
             
             # save matrix into csv
             if save_csv:
+                print('check multipath option: ', self.multipath_option)
                 print('check matr_i shape: ', matr_i.shape)
                 for i in range(matr_i.shape[0]):
                     datetime_now = datetime.datetime.now()
