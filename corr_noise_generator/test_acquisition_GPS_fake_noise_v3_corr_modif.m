@@ -320,6 +320,14 @@ endif
 corrMod = zeros(lDop,lC_2N_p2);
 corrModcompl = zeros(lDop, lC_2N_p2);
 
+
+% FFT du code PRN. compute FFT of PRN code just once
+fft_PRN = fft(code_PRN1_2N_p2);
+%clear code_PRN1_N;
+% Conjugaison remplace le retournement temporel necessaire
+% a implementation de la correlation par la convolution
+fft_PRN = conj(fft_PRN);
+
 h = waitbar(0,'Acquisition en cours');
 
 % Search for Doppler shift
@@ -329,37 +337,49 @@ for i = [1:lDop]
 
   % Les r�pliques locales I (co) et Q (si) sont implicitement mises � z�ros
   % sur les N + 2 derni�res p�riodes par code_PRN1_2N_p2
-  co = code_PRN1_2N_p2.*cos(2*pi*(Fif + fDop(i))*t);
-  si = code_PRN1_2N_p2.*sin(2*pi*(Fif + fDop(i))*t);
-  fft_PRN1I = fft(co);
-  fft_PRN1Q = fft(si);
+  %co = code_PRN1_2N_p2.*cos(2*pi*(Fif + fDop(i))*t);
+  %si = code_PRN1_2N_p2.*sin(2*pi*(Fif + fDop(i))*t);
+  %fft_PRN1I = fft(co);
+  %fft_PRN1Q = fft(si);
 
   % Non-coherent summations
   for k = [1:M]
     
-    % Le signal est compl�t� avec N + 1 p�riodes de z�ros
-    fftI = fft([voieI(k*lC_N_p1:-1:1 + (k - 1)*lC_N_p1) zeros(1,lC_N_p1)]);
+    co_I = [voieI(k*lC_N_p1:-1:1 + (k - 1)*lC_N_p1) zeros(1,lC_N_p1)].* cos(2*pi*(Fif + fDop(i)) * t);
+    si_I = [voieI(k*lC_N_p1:-1:1 + (k - 1)*lC_N_p1) zeros(1,lC_N_p1)].* sin(2*pi*(Fif + fDop(i)) * t);
+    fft_co_I = fft(co_I);
+    fft_si_I = fft(si_I);
     if (if_signal == false)
-      fftQ = fft([voieQ(k*lC_N_p1:-1:1 + (k - 1)*lC_N_p1) zeros(1,lC_N_p1)]);
+      co_Q = [voieQ(k*lC_N_p1:-1:1 + (k - 1)*lC_N_p1) zeros(1,lC_N_p1)].* cos(2*pi*(Fif + fDop(i)) * t);
+      si_Q = [voieQ(k*lC_N_p1:-1:1 + (k - 1)*lC_N_p1) zeros(1,lC_N_p1)].* cos(2*pi*(Fif + fDop(i)) * t);
+      fft_co_Q = fft(co_Q);
+      fft_si_Q = fft(si_Q);
     endif
     
-    fftProdIco = fft_PRN1I.*fftI;
-    fftProdIsi = fft_PRN1Q.*fftI;
+    fft_co_I_PRN = fft_co_I .* fft_PRN;
+    fft_si_I_PRN = fft_si_I .* fft_PRN;
     if (if_signal == false)
-      fftProdQco = fft_PRN1I.*fftQ;
-      fftProdQsi = fft_PRN1Q.*fftQ;z
+      fft_co_Q_PRN = fft_co_Q .* fft_PRN;
+      fft_si_Q_PRN = fft_si_Q .* fft_PRN; 
     endif
-
-    corrIco = real(ifft(fftProdIco));
-    corrIsi = real(ifft(fftProdIsi));
+    
+    % il faut conserver la symetrie du spectre, 
+    % sinon le signal temporell nest pas reel apres ifft
+    
+    % ifft(X, N_nterp) padde X avec des zeros a la fin du spectre
+    % ce qui reompte la symetrie et donne un signal complexe en temporel
+    
+    corrIco = real(ifft(fft_co_I_PRN));
+    corrIsi = real(ifft(fft_si_I_PRN));
     if (if_signal == false)
-      corrQco = real(ifft(fftProdQco));
-      corrQsi = real(ifft(fftProdQsi));
+      corrQco = real(ifft(fft_co_Q_PRN));
+      corrQsi = real(ifft(fft_si_Q_PRN)); 
     endif
 
     if (if_signal == false)
       corrModCos(i,:) = (corrIco + corrQsi);
       corrModSin(i,:) = (corrQco - corrIsi);
+      % Pour estimation correcte du CN0
       corrMod(i,:) += corrModCos(i,:).^2 + corrModSin(i,:).^2;
       % Pour mieux voir les lobes secondaires :
       % corrMod(i,:) += sqrt(corrModCos(i,:).^2 + corrModSin(i,:).^2);
