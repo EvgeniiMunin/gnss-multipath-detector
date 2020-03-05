@@ -8,6 +8,8 @@ import pandas as pd
 import math
 from scipy import signal
 import cv2
+
+import matplotlib.pyplot as plt
 #from sklearn.preprocessing import MinMaxScaler
 
 #from reference_feature_extractor import FeatureExtractor
@@ -202,7 +204,14 @@ class FakeNoiseDataset:
         self.discr = discr
         
     def __preprocess__(self, path):
-        a = pd.read_csv(path, sep=',', header=None).values
+        #a = pd.read_csv(path, sep=',', header=None).values
+        a = np.genfromtxt(path, delimiter=',')
+#        print('check path: ', path)
+#        print('CHECK NOISE MATRIX BEFORE SCALE/ CROP')
+#        plt.figure()
+#        plt.imshow(a)
+#        plt.show()
+        
         a = a[:, :a.shape[0]][:self.discr[0], :self.discr[1]]
         return a
     
@@ -213,6 +222,11 @@ class FakeNoiseDataset:
             
             # scale noise matrix
             noise_matr = (noise_matr - noise_matr.min()) / (noise_matr.max() - noise_matr.min())
+            
+#            print('CHECK NOISE MATRIX AFTER SCALE')
+#            plt.figure()
+#            plt.imshow(noise_matr)
+#            plt.show()
             
             noise_data.append(noise_matr)
         return np.array(noise_data)    

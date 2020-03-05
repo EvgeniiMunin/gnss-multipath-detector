@@ -459,75 +459,17 @@ endswitch
 clear corrMax corrMaxMax;
 
 if interactive == true
-  %figure("name","Correlation au pic en fonction de l'�cart de fr�quence",...
-  %"numbertitle","off");
-  if (if_signal == false)
-    %subplot(1,4,1)
-    %plot(fDop,z(:,indT)); grid on;
-    %xlabel('Hz'); title('Correlation voie I');
-    %subplot(1,4,2)
-    %plot(fDop,corrModSin_t(:,indT)); grid on;
-    %xlabel('Hz'); title('Correlation voie Q');
-    %subplot(1,4,3)
-    %plot(fDop,corrShift_t(:,indT)); grid on;
-    %xlabel('Hz'); title('Somme des correlations I^2 + Q^2');
-    %subplot(1,4,4)
-    %t_plot = [0:lC_N - 1]/Fs;
-    %plot(t_plot,corrShift_t(indDop(indT),:)); grid on;
-    %xlabel('s'); title('Somme des correlations I^2 + Q^2');
-  else
-    %subplot(1,2,1)
-    %plot(fDop,corrShift_t(:,indT)); grid on;
-    %xlabel('Hz'); title('Somme des correlations I^2 + Q^2');
-    %subplot(1,2,2)
-    %t_plot = [0:lC_N - 1]/Fs;
-    %plot(t_plot,corrShift_t(indDop(indT),:)); grid on;
-    %xlabel('s'); title('Somme des correlations I^2 + Q^2');
-  endif
-
-  #figure();
-  #[x,y] = meshgrid(t,fDop - LO_offset);
-  #mesh(x,y,corrShift);
-  #xlabel('s'); ylabel('Hz'); zlabel('Correlation');
-  #title(sprintf('Satellite %i',satNum));
-  
-  %figure();
-  %[x,y] = meshgrid(t_plot,fDop + LO_offset);
-  %mesh(x,y,corrShift_t);
-  %xlabel('s'); ylabel('Hz'); zlabel('Correlation');
-  %title(sprintf('Satellite %i',satNum));
-  
-  % Plot correlation function of fake noise
-  plot_noise_corr = 0
-  if plot_noise_corr 
-    figure();
-    %[x,y] = meshgrid(t_plot,fDop + LO_offset);
-    [x,y] = meshgrid([1:size(corrShift)(2)], [1:size(corrShift)(1)]);
-    mesh(x,y,corrShift);
-    xlabel('s'); ylabel('Hz'); zlabel('Correlation');
-    title(sprintf('Satellite %i',satNum));
-    
-    figure();
-    %[x,y] = meshgrid(t_plot,fDop + LO_offset);
-    [x,y] = meshgrid([1:size(corrShift_t)(2)], [1:size(corrShift_t)(1)]);
-    mesh(x,y,corrShift_t);
-    xlabel('s'); ylabel('Hz'); zlabel('Correlation');
-    title(sprintf('Satellite %i',satNum));
-    
-    figure();
-    %[x,y] = meshgrid(t_plot,fDop + LO_offset);
-    [x,y] = meshgrid([1:size(corrModcompl_t)(2)], [1:size(corrModcompl_t)(1)]);
-    mesh(x,y,abs(corrModcompl_t));
-    xlabel('s'); ylabel('Hz'); zlabel('Correlation');
-    title(sprintf('Satellite %i',satNum));
-  endif
-  
+  % Plot correlation function of fake noise 
   plot_corrMod_corr = 1
   if plot_corrMod_corr 
     figure();
+    'CHECK FIGURE TO BUILD'
     %[x,y] = meshgrid(t_plot,fDop + LO_offset);
     [x,y] = meshgrid([1:size(corrModcompl_crop)(2)], [1:size(corrModcompl_crop)(1)]);
-    mesh(x,y,abs(corrModcompl_crop));
+    %matr_vis = abs(corrModcompl_crop);
+    %matr_vis = real(corrModcompl_crop).^2 + imag(corrModcompl_crop).^2;
+    matr_vis = real(corrModcompl_crop);
+    mesh(x,y, matr_vis);
     xlabel('s'); ylabel('Hz'); zlabel('Correlation');
     title(sprintf('Satellite %i',satNum));
     

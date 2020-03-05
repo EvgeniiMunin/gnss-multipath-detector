@@ -9,6 +9,8 @@ import glob
 import datetime
 from data_generator import CorrDatasetV2, FakeNoiseDataset
 
+import matplotlib.pyplot as plt
+
 class DataSampler:
     
     def __init__(self, discr_size_fd, scale_code,    
@@ -105,6 +107,12 @@ class DataSampler:
                 self.q_samples = self.q_samples[:min_nb_samples,...]
                 self.noise_i_samples = self.noise_i_samples[:min_nb_samples,...]
                 self.noise_q_samples = self.noise_q_samples[:min_nb_samples,...]
+            
+            
+            print('CHECK NOISE MODULE MATRIX BEFORE SUM')
+            plt.figure()
+            plt.imshow(self.noise_i_samples[0,...]**2 + self.noise_q_samples[0,...]**2)
+            plt.show()
             
             matr_i = np.sum([self.i_samples, self.noise_i_samples], axis=0)
             matr_q = np.sum([self.q_samples, self.noise_q_samples], axis=0)
