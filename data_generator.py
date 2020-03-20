@@ -64,7 +64,7 @@ class CorrDatasetV2():
                 sin_matrix = sin_matrix[abs(xk):, :sin_matrix.shape[1]-yk]
         return cos_matrix, sin_matrix
             
-    def __noise_model__(self):         
+    def __noise_model__(self):
         noise_corr_mean = 0
         noise_corr_std = math.sqrt(self.noise_psd * self.Tint / 16)
         
@@ -94,7 +94,6 @@ class CorrDatasetV2():
         # Generate triangle/ sinc function
         func1 = self.sign_amp * signal.triang(self.scale_code // 2)
         func2 = self.sign_amp * np.sinc((x + delta_dopp) * self.Tint)
-        print('check shapes: ', func1.shape, func2.shape)
         
         # Only 1 principal peak
         for i, point in enumerate(func2):
@@ -143,7 +142,7 @@ class CorrDatasetV2():
 
         matrix = np.concatenate((I_norm, Q_norm), axis=2)
        
-        return matrix, module, xk, yk
+        return matrix, xk, yk
 # -----------------------------------------------------------------------------
   
     def build(self, nb_samples=10, ref_features=False, sec_der=False, four_ch=False):
@@ -160,24 +159,36 @@ class CorrDatasetV2():
                 delta_doppi = np.random.uniform(low=self.delta_dopp_interv[0], high=self.delta_dopp_interv[1])
                 alpha_atti = np.random.uniform(low=self.alpha_att_interv[0], high=self.alpha_att_interv[1])
                 
-                matrix, module, x, y = self.__generate_peak__()
-                matrix_mp, module_mp, x, y = self.__generate_peak__(multipath=self.multipath_option,
+                matrix, x, y = self.__generate_peak__()
+                matrix_mp, x, y = self.__generate_peak__(multipath=self.multipath_option,
                                                          delta_dopp=delta_doppi, 
                                                          delta_tau=delta_taui,
                                                          delta_phase=self.delta_phase,
                                                          alpha_att=alpha_atti,
                                                          ref_features=ref_features)
+                
+                print(matrix.shape, matrix.max(), matrix.min())
+                plt.imshow(matrix[...,0])
+                plt.show()
+                print(matrix_mp.shape, matrix_mp.max(), matrix.min())
+                plt.imshow(matrix_mp[...,0])
+                plt.show()
+                
+                #matrix = matrix + matrix_mp
+                #module = module + module_mp
                 if x >= 0:
-                    matrix[x:, y:] = matrix[x:, y:] + matrix_mp
-                    module[x:, y:] = module[x:, y:] + module_mp
+                    matrix[x:, y:] = matrix[x:, y:] * matrix_mp + matrix[x:, y:]
+                    #module[x:, y:] = module[x:, y:] * module_mp + module[x:, y:]
                 else:
-                    matrix[:matrix.shape[0]-abs(x), y:] = matrix[:matrix.shape[0]-abs(x), y:] + matrix_mp
-                    module[:matrix.shape[0]-abs(x), y:] = module[:matrix.shape[0]-abs(x), y:] + module_mp
+                    matrix[:matrix.shape[0]-abs(x), y:] = matrix[:matrix.shape[0]-abs(x), y:] * matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
+                    #module[:matrix.shape[0]-abs(x), y:] = module[:matrix.shape[0]-abs(x), y:] * module_mp + module[:matrix.shape[0]-abs(x), y:]
+                
                 
             else:
-                matrix, module, x, y = self.__generate_peak__(delta_phase=self.delta_phase, 
+                matrix, x, y = self.__generate_peak__(delta_phase=self.delta_phase, 
                                                           ref_features=ref_features)
-                
+            
+            module = matrix[...,0] ** 2 + matrix[...,1] ** 2
             data['table'] = matrix
             data['module'] = module[...,None]
             
@@ -212,10 +223,14 @@ class FakeNoiseDataset:
 #        plt.imshow(a)
 #        plt.show()
         
-        a = a[:, :a.shape[0]][:self.discr[0], :self.discr[1]]
+        # remove crop, keep just resize
+        #a = a[:, :a.shape[0]][:self.discr[0], :self.discr[1]]
+        print('check resize fake noise matrix')
+        a = cv2.resize(a, self.discr_shape)
         return a
     
-    def build(self, paths):
+    def build(self, paths, discr_shape=(40,40)):
+        self.discr_shape = discr_shape
         noise_data = []
         for path in paths:
             noise_matr = self.__preprocess__(path)

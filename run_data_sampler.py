@@ -22,7 +22,8 @@ def main():
     delta_dopp_interv = [-1000, 1000]
     delta_phase = 0
     alpha_att_interv = [0.5, 0.9]
-    cn0_log=50
+    cn0_log=48
+    print('CHECK CNO ratio: ', cn0_log)
     
     # define intervals
     # chip rate/ period of PRN code

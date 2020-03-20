@@ -19,22 +19,25 @@ class SX3Dataset():
 
   def __build_matr__(self, path):
     matr = pd.read_csv(path, sep=',', header=None).values
+    #print('check origin matrix shape: ', matr.shape)
     
     # crop and resize matr
     max_ind = np.unravel_index(np.argmax(matr), matr.shape)
 
-    # check max_in position wrt borders
+    # check max_in position wrt borders (make square matrix)
     if max_ind[0] - matr.shape[1]//2 <= 0:
       matr_crop = matr[:matr.shape[1], :]
     elif max_ind[0] + matr.shape[1]//2 >= 0:
       matr_crop = matr[-matr.shape[1]:, :]
     else:
       matr_crop = matr[max_ind[0]-matr.shape[1]//2 : max_ind[0]+matr.shape[1]//2, :]
+    #print('check square matrix shape: ', matr_crop.shape)
     matr_resize = cv2.resize(matr_crop, self.discr_shape)
     
     # scale matr
     matr_resize = (matr_resize - matr_resize.min()) / (matr_resize.max() - matr_resize.min())
     
+    #print('check processed matrix shape: ', matr_resize.shape)
     return matr_resize
 
   def build(self, discr_shape=(40,40)):

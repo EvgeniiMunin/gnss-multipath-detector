@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 
 import glob
 import json
+import matplotlib.pyplot as plt
 
 #%%
 from data_generator_sx3 import SX3Dataset
@@ -19,7 +20,7 @@ from data_generator import CorrDatasetV2
 from model import Model
 from utils import save_model, load_model
 
-#%% prepare sx3 data
+#%% prepare sx3 data (only module)
 dataset_mp = SX3Dataset(label=1, global_path='sx3_data/outputs/mp/*')
 dataset_nomp = SX3Dataset(label=0, global_path='sx3_data/outputs/no_mp/*')
 
@@ -31,14 +32,14 @@ np.random.shuffle(dataset)
 
 data_train, data_val = train_test_split(dataset, test_size=0.2)
 
-# 1 channel image, add newaxis
+# 1 channel image (only module), add newaxis
 X_train_sx = np.array([x['table'] for x in data_train])[...,None]
 X_val_sx = np.array([x['table'] for x in data_val])[...,None]
 
 y_train_sx = np.array([x['label'] for x in data_train])
 y_val_sx = np.array([x['label'] for x in data_val])
 
-#%% prepare data generator data
+#%% prepare data generator data (only module)
 global_path_mp_i = 'synth_data/mp/*_i_*'
 global_path_mp_q = 'synth_data/mp/*_q_*'
 global_path_nomp_i = 'synth_data/no_mp/*_i_*'
@@ -115,7 +116,6 @@ model.model.evaluate(
         )
 
 #%% visually compare matrices
-import matplotlib.pyplot as plt
 
 n = np.random.randint(0, 10)
 

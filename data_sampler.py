@@ -110,12 +110,13 @@ class DataSampler:
             
             
             print('CHECK NOISE MODULE MATRIX BEFORE SUM')
-            plt.figure()
-            plt.imshow(self.noise_i_samples[0,...]**2 + self.noise_q_samples[0,...]**2)
-            plt.show()
             
             matr_i = np.sum([self.i_samples, self.noise_i_samples], axis=0)
             matr_q = np.sum([self.q_samples, self.noise_q_samples], axis=0)
+            
+            plt.figure()
+            plt.imshow(matr_i[0,...]**2 + matr_q[0,...]**2)
+            plt.show()
             
             print('check matrix min/max: ', self.i_samples.min(), self.q_samples.max(), self.noise_i_samples.min(), self.noise_q_samples.max())
             

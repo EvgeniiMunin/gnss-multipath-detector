@@ -17,7 +17,7 @@ import datetime
 from data_generator import CorrDatasetV2, FakeNoiseDataset
 from data_sampler import DataSampler
 from utils import visualize_plt#, visualize_3d_discr
-from model import Model 
+#from model import Model 
 
 
 #%%
@@ -54,10 +54,10 @@ Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
                         scale_code=scale_code,
                         Tint=Tint,
                         multipath_option=True,
-                        delta_tau_interv=delta_tau,
-                        delta_dopp_interv=delta_dopp,
+                        delta_tau_interv=delta_tau_interv,
+                        delta_dopp_interv=delta_dopp_interv,
                         delta_phase=delta_phase,
-                        alpha_att_interv=alpha_att,
+                        alpha_att_interv=alpha_att_interv,
                         tau=tau_prime_interval, 
                         dopp=dopp_interval,
                         cn0_log=cn0_log)
