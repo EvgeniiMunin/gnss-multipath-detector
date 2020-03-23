@@ -10,8 +10,8 @@ echo "acquisition completed"
 
 # execute run_data_sampler.py. generate mp/no_mp
 cd ..
-python run_data_sampler.py --mp=0 --nb_samples=2
-python run_data_sampler.py --mp=1 --nb_samples=2
+python run_data_sampler.py --mp=0 --nb_samples=1 --cn0=48
+python run_data_sampler.py --mp=1 --nb_samples=2 --cn0=48
 echo "sampling/ sum completed"
 
 exit 0

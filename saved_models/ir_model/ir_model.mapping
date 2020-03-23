@@ -1,0 +1,71 @@
+<?xml version="1.0" ?>
+<mapping>
+	<map>
+		<framework name="conv2d_12_1/BiasAdd" out_port_id="0"/>
+		<IR id="8" name="conv2d_12_1/convolution" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="max_pooling2d_6_1/MaxPool" out_port_id="0"/>
+		<IR id="11" name="max_pooling2d_6_1/MaxPool/Transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="conv2d_10_1/BiasAdd" out_port_id="0"/>
+		<IR id="3" name="conv2d_10_1/convolution" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="conv2d_9_1/Relu" out_port_id="0"/>
+		<IR id="2" name="conv2d_9_1/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="conv2d_9_1/BiasAdd" out_port_id="0"/>
+		<IR id="1" name="conv2d_9_1/convolution" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="conv2d_10_1/Relu" out_port_id="0"/>
+		<IR id="4" name="conv2d_10_1/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="dense_5_1/Relu" out_port_id="0"/>
+		<IR id="15" name="dense_5_1/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="max_pooling2d_5_1/MaxPool" out_port_id="0"/>
+		<IR id="5" name="max_pooling2d_5_1/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="dense_5_1/BiasAdd" out_port_id="0"/>
+		<IR id="14" name="dense_5_1/MatMul" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="dense_6_1/BiasAdd" out_port_id="0"/>
+		<IR id="16" name="dense_6_1/MatMul" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="conv2d_11_1/Relu" out_port_id="0"/>
+		<IR id="7" name="conv2d_11_1/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="flatten_3_1/stack_1217" out_port_id="0"/>
+		<IR id="12" name="flatten_3_1/stack_1217/Concat_/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="dense_6_1/Sigmoid" out_port_id="0"/>
+		<IR id="17" name="dense_6_1/Sigmoid" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="conv2d_12_1/Relu" out_port_id="0"/>
+		<IR id="9" name="conv2d_12_1/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="conv2d_11_1/BiasAdd" out_port_id="0"/>
+		<IR id="6" name="conv2d_11_1/convolution" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="conv2d_9_input_1" out_port_id="0"/>
+		<IR id="0" name="conv2d_9_input_1" out_port_id="0"/>
+	</map>
+	<map>
+		<framework name="flatten_3_1/Reshape" out_port_id="0"/>
+		<IR id="13" name="flatten_3_1/Reshape" out_port_id="2"/>
+	</map>
+</mapping>
