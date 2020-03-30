@@ -56,9 +56,9 @@ class DataSampler:
         noise_factor_i = np.sqrt(p / (2 * var_i * self.Tint * self.cn0))
         noise_factor_q = np.sqrt(p / (2 * var_q * self.Tint * self.cn0))
         
-        print('check matrix min/max before factor: ', self.noise_i_samples.min(), self.noise_i_samples.max())
-        print('check noise factor: ', noise_factor_i, noise_factor_q)
-        print('check terms: ', p, var_i, self.Tint, self.cn0)
+        #print('check matrix min/max before factor: ', self.noise_i_samples.min(), self.noise_i_samples.max())
+        #print('check noise factor: ', noise_factor_i, noise_factor_q)
+        #print('check terms: ', p, var_i, self.Tint, self.cn0)
         
         # apply noise factor
         # paths = glob.glob('corr_noise_generator/outputs/i_channel/*.csv')
@@ -66,7 +66,7 @@ class DataSampler:
         self.noise_i_samples *= noise_factor_i
         self.noise_q_samples *= noise_factor_q 
         
-        print('check matrix min/max after factor: ', self.noise_i_samples.min(), self.noise_i_samples.max())
+        #print('check matrix min/max after factor: ', self.noise_i_samples.min(), self.noise_i_samples.max())
     
     def generate_corr(self, nb_samples=13):
         # no_mp/ mp option
@@ -101,7 +101,7 @@ class DataSampler:
                 raise ValueError
             
             if self.i_samples.shape[0] != self.noise_i_samples.shape[0]:
-                print('Nb samples correction: ', self.i_samples.shape, self.noise_i_samples.shape)
+                #print('Nb samples correction: ', self.i_samples.shape, self.noise_i_samples.shape)
                 min_nb_samples = min(self.i_samples.shape[0], self.noise_i_samples.shape[0])
                 self.i_samples = self.i_samples[:min_nb_samples,...]
                 self.q_samples = self.q_samples[:min_nb_samples,...]
@@ -114,17 +114,18 @@ class DataSampler:
             matr_i = np.sum([self.i_samples, self.noise_i_samples], axis=0)
             matr_q = np.sum([self.q_samples, self.noise_q_samples], axis=0)
             
-            plt.figure()
-            plt.imshow(matr_i[0,...]**2 + matr_q[0,...]**2)
-            plt.show()
+            #plt.figure()
+            #plt.imshow(matr_i[0,...]**2 + matr_q[0,...]**2)
+            #plt.show()
             
-            print('check matrix min/max: ', self.i_samples.min(), self.q_samples.max(), self.noise_i_samples.min(), self.noise_q_samples.max())
+            #print('check matrix min/max: ', self.i_samples.min(), self.q_samples.max(), self.noise_i_samples.min(), self.noise_q_samples.max())
             
             # save matrix into csv
             if save_csv:
-                print('check multipath option: ', self.multipath_option)
-                print('check matr_i shape: ', matr_i.shape)
+                #print('check multipath option: ', self.multipath_option)
+                #print('check matr_i shape: ', matr_i.shape)
                 for i in range(matr_i.shape[0]):
+                    print('---------- EXAMPLE {} --------'.format(i))
                     datetime_now = datetime.datetime.now()
                     # save i/q_channel
                     if self.multipath_option:

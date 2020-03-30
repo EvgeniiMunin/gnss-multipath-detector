@@ -12,8 +12,9 @@ import cv2
 
 
 class SX3Dataset():
-  def __init__(self, label=0, global_path='test_subset/mp/*'):
-    self.global_path = global_path
+  def __init__(self, label=0, global_path='test_subset/mp_'):
+    self.global_path_i = global_path + '_i/*'
+    self.global_path_q = global_path + '_q/*'
     self.label = label
     self.data_samples = []
 
@@ -42,8 +43,16 @@ class SX3Dataset():
 
   def build(self, discr_shape=(40,40)):
     self.discr_shape = discr_shape
-    paths = glob.glob(self.global_path)
-    for path in paths:
-      img =  self.__build_matr__(path)
-      self.data_samples.append({'table': img, 'label':self.label})
+
+    paths_i = glob.glob(self.global_path_i)
+    paths_q = glob.glob(self.global_path_q)
+    for path_i, path_q in zip(paths_i, paths_q):
+        img_i =  self.__build_matr__(path_i)
+        img_q =  self.__build_matr__(path_q)
+        img_i = img_i[...,None]
+        img_q = img_q[...,None]
+        
+        #print('check shapes: ', img_i.shape)
+        img = np.concatenate((img_i, img_q), axis=2)
+        self.data_samples.append({'table': img, 'label':self.label})
     return np.array(self.data_samples)

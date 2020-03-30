@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mp', required=True, default=0)
     parser.add_argument('--nb_samples', required=True, default=1)
+    parser.add_argument('--cn0', required=True, default=1)
     args = parser.parse_args()
     
     multipath_option = False if args.mp == '0' else True
@@ -22,7 +23,7 @@ def main():
     delta_dopp_interv = [-1000, 1000]
     delta_phase = 0
     alpha_att_interv = [0.5, 0.9]
-    cn0_log=48
+    cn0_log = int(args.cn0)
     print('CHECK CNO ratio: ', cn0_log)
     
     # define intervals

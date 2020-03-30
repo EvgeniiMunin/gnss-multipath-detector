@@ -98,19 +98,19 @@ class CorrDatasetV2():
         # Only 1 principal peak
         for i, point in enumerate(func2):
             matrix_tr[i] = alpha_att * func1 * point
-        print('check shapes matrix: ', matrix_tr.shape, matrix.shape)
+        #print('check shapes matrix: ', matrix_tr.shape, matrix.shape)
         # sum matrix_tr and matrix of background according interval offset
         matrix[:, 5:(self.scale_code // 2 + 5)] = matrix_tr
         
         # Superpose 2 peaks. Weight matrix of MP peak by the matrix of principal peak 
         if multipath:
-            print('check xk, yk: ', xk, yk)
+            #print('check xk, yk: ', xk, yk)
             if xk >= 0:
                 matrix = matrix[:matrix.shape[0]-xk, :matrix.shape[1]-yk]
             else:
                 matrix = matrix[abs(xk):, :matrix.shape[1]-yk]
         
-        print('check shapes matrix after mp adjustment: ', matrix_tr.shape, matrix.shape)
+        #print('check shapes matrix after mp adjustment: ', matrix_tr.shape, matrix.shape)
         
         
         # Split matrices in I, Q channels
@@ -167,12 +167,12 @@ class CorrDatasetV2():
                                                          alpha_att=alpha_atti,
                                                          ref_features=ref_features)
                 
-                print(matrix.shape, matrix.max(), matrix.min())
-                plt.imshow(matrix[...,0])
-                plt.show()
-                print(matrix_mp.shape, matrix_mp.max(), matrix.min())
-                plt.imshow(matrix_mp[...,0])
-                plt.show()
+                #print(matrix.shape, matrix.max(), matrix.min())
+                #plt.imshow(matrix[...,0])
+                #plt.show()
+                #print(matrix_mp.shape, matrix_mp.max(), matrix.min())
+                #plt.imshow(matrix_mp[...,0])
+                #plt.show()
                 
                 #matrix = matrix + matrix_mp
                 #module = module + module_mp
@@ -225,7 +225,7 @@ class FakeNoiseDataset:
         
         # remove crop, keep just resize
         #a = a[:, :a.shape[0]][:self.discr[0], :self.discr[1]]
-        print('check resize fake noise matrix')
+        #print('check resize fake noise matrix')
         a = cv2.resize(a, self.discr_shape)
         return a
     
