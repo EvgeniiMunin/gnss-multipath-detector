@@ -210,9 +210,9 @@ class CorrDatasetV2():
 
 
 class FakeNoiseDataset:
-    def __init__(self, discr=(20,20)):
+    def __init__(self):
         self.noise_data = []
-        self.discr = discr
+        #self.discr = discr
         
     def __preprocess__(self, path):
         #a = pd.read_csv(path, sep=',', header=None).values

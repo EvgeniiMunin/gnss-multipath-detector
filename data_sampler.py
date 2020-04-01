@@ -40,14 +40,14 @@ class DataSampler:
         self.cn0 = 10**(0.1*self.cn0_log)
         
     def read_noise(self, i_path, q_path, matrix_shape, nb_samples=13):
-        fake_noise_generator = FakeNoiseDataset(discr=matrix_shape)
+        fake_noise_generator = FakeNoiseDataset()
         
         # read i channel
         paths = glob.glob(i_path)
-        self.noise_i_samples = fake_noise_generator.build(paths[:nb_samples])
+        self.noise_i_samples = fake_noise_generator.build(paths[:nb_samples], discr_shape=matrix_shape)
         # read q channel
         paths = glob.glob(q_path)
-        self.noise_q_samples = fake_noise_generator.build(paths[:nb_samples])
+        self.noise_q_samples = fake_noise_generator.build(paths[:nb_samples], discr_shape=matrix_shape)
         
         # compute noise factor
         p = (self.noise_i_samples[0]**2 + self.noise_q_samples[0]**2).max()
