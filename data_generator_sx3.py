@@ -32,7 +32,7 @@ class SX3Dataset():
       matr_crop = matr[-matr.shape[1]:, :]
     else:
       matr_crop = matr[max_ind[0]-matr.shape[1]//2 : max_ind[0]+matr.shape[1]//2, :]
-    #print('check square matrix shape: ', matr_crop.shape)
+
     matr_resize = cv2.resize(matr_crop, self.discr_shape)
     
     # scale matr
@@ -41,7 +41,7 @@ class SX3Dataset():
     #print('check processed matrix shape: ', matr_resize.shape)
     return matr_resize
 
-  def build(self, discr_shape=(40,40)):
+  def build(self, discr_shape=(40,40), module_option=False):
     self.discr_shape = discr_shape
 
     paths_i = glob.glob(self.global_path_i)
@@ -49,10 +49,17 @@ class SX3Dataset():
     for path_i, path_q in zip(paths_i, paths_q):
         img_i =  self.__build_matr__(path_i)
         img_q =  self.__build_matr__(path_q)
-        img_i = img_i[...,None]
-        img_q = img_q[...,None]
         
-        #print('check shapes: ', img_i.shape)
-        img = np.concatenate((img_i, img_q), axis=2)
+        if module_option:
+            img = (img_i**2 + img_q**2)[...,None]
+            img = (img - img.min()) / (img.max() - img.min())
+        else:
+            img_i = (img_i - img_i.min()) / (img_i.max() - img_i.min())
+            img_q = (img_q - img_q.min()) / (img_q.max() - img_q.min())
+            
+            img_i = img_i[...,None]
+            img_q = img_q[...,None]
+            img = np.concatenate((img_i, img_q), axis=2)
+        
         self.data_samples.append({'table': img, 'label':self.label})
     return np.array(self.data_samples)

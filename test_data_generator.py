@@ -49,6 +49,7 @@ tau_prime_interval = [0, 4]
 #tau_max_left = Tc
 #tau_max_right = 2.5 * Tc
 
+
 #%% Check CorrDataset
 Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
                         scale_code=scale_code,
@@ -64,7 +65,8 @@ Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
 
 samples = Dataset.build(nb_samples=1)
 visualize_plt(samples[0]['table'][...,0])
-visualize_plt(samples[0]['module'][...,0])
+visualize_plt(samples[0]['table'][...,1])
+#visualize_plt(samples[0]['module'][...,0])
 
 #%% Check CorrDataset generation for multipath case
 Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,

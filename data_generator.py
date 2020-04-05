@@ -68,7 +68,6 @@ class CorrDatasetV2():
         noise_corr_mean = 0
         noise_corr_std = math.sqrt(self.noise_psd * self.Tint / 16)
         
-        #print('snr_log: {}, sign power {}, noise psd: {},  noise corr std: {}'.format(self.snr_log, self.sign_power, noise_psd, noise_corr_std))
         return noise_corr_mean, noise_corr_std
    
     
@@ -77,7 +76,6 @@ class CorrDatasetV2():
         y = np.linspace(self.tau[0], self.tau[1], self.scale_code)
         # define linspace just for triangle (2 chips wide)
         #y_triang = np.linspace(0, 2, 20) + 0.5
-        #print('check y_triang', y_triang)
         
         # Create empty matrix for peaks
         matrix = np.zeros((self.discr_size_fd, self.scale_code))
@@ -88,8 +86,6 @@ class CorrDatasetV2():
         yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code)
         
         #yk_triang = int(y_triang.mean() + delta_tau / (y_triang.max() - y_triang.min()) * (self.scale_code // 2))
-        #print(yk)
-        #print('check yk_triang: ', yk_triang)
         
         # Generate triangle/ sinc function
         func1 = self.sign_amp * signal.triang(self.scale_code // 2)
@@ -98,7 +94,7 @@ class CorrDatasetV2():
         # Only 1 principal peak
         for i, point in enumerate(func2):
             matrix_tr[i] = alpha_att * func1 * point
-        #print('check shapes matrix: ', matrix_tr.shape, matrix.shape)
+
         # sum matrix_tr and matrix of background according interval offset
         matrix[:, 5:(self.scale_code // 2 + 5)] = matrix_tr
         
@@ -110,32 +106,20 @@ class CorrDatasetV2():
             else:
                 matrix = matrix[abs(xk):, :matrix.shape[1]-yk]
         
-        #print('check shapes matrix after mp adjustment: ', matrix_tr.shape, matrix.shape)
-        
-        
         # Split matrices in I, Q channels
         I = matrix * self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0]
-        Q = -matrix * self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[1]
-         
-        # Add noise model
-        #mean = self.noise_model()[0]
-        #var = self.noise_model()[1]
+        # put all the signal on I channel (0 in Q channel) except mp case
+        if multipath:            
+            Q = -matrix * self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[1]
+        else:
+            Q = np.zeros_like(matrix)
         
         module = np.sqrt(I**2 + Q**2)
-        #I += np.random.normal(mean, var, size=matrix.shape)
-        #Q += np.random.normal(mean, var, size=matrix.shape)
        
-        #if ref_features:
-        #    print('check no normalization for reference')
-        #    I_norm = I[...,None]
-        #    Q_norm = Q[...,None]
-        #else:
         I_norm = (I - module.min()) / (module.max() - module.min())
         Q_norm = (Q - module.min()) / (module.max() - module.min())
+        
         module = (module - module.min()) / (module.max() - module.min())
-        #I_norm = I
-        #Q_norm = Q
-        #print('CHECK SCALE')
         
         I_norm = I_norm[...,None]
         Q_norm = Q_norm[...,None]
@@ -147,10 +131,8 @@ class CorrDatasetV2():
   
     def build(self, nb_samples=10, ref_features=False, sec_der=False, four_ch=False):
         data_samples = []
-#        ref_data_samples = []
         for i in range(nb_samples):
             data = {}
-#            ref_data = {}
               
             # Generate matrices: main, multipath
             if self.multipath_option:
@@ -167,20 +149,14 @@ class CorrDatasetV2():
                                                          alpha_att=alpha_atti,
                                                          ref_features=ref_features)
                 
-                #print(matrix.shape, matrix.max(), matrix.min())
-                #plt.imshow(matrix[...,0])
-                #plt.show()
-                #print(matrix_mp.shape, matrix_mp.max(), matrix.min())
-                #plt.imshow(matrix_mp[...,0])
-                #plt.show()
                 
-                #matrix = matrix + matrix_mp
-                #module = module + module_mp
                 if x >= 0:
-                    matrix[x:, y:] = matrix[x:, y:] * matrix_mp + matrix[x:, y:]
+                    #matrix[x:, y:] = matrix[x:, y:] * matrix_mp + matrix[x:, y:]
+                    matrix[x:, y:] = matrix_mp + matrix[x:, y:]
                     #module[x:, y:] = module[x:, y:] * module_mp + module[x:, y:]
                 else:
-                    matrix[:matrix.shape[0]-abs(x), y:] = matrix[:matrix.shape[0]-abs(x), y:] * matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
+                    #matrix[:matrix.shape[0]-abs(x), y:] = matrix[:matrix.shape[0]-abs(x), y:] * matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
+                    matrix[:matrix.shape[0]-abs(x), y:] = matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
                     #module[:matrix.shape[0]-abs(x), y:] = module[:matrix.shape[0]-abs(x), y:] * module_mp + module[:matrix.shape[0]-abs(x), y:]
                 
                 
@@ -217,15 +193,6 @@ class FakeNoiseDataset:
     def __preprocess__(self, path):
         #a = pd.read_csv(path, sep=',', header=None).values
         a = np.genfromtxt(path, delimiter=',')
-#        print('check path: ', path)
-#        print('CHECK NOISE MATRIX BEFORE SCALE/ CROP')
-#        plt.figure()
-#        plt.imshow(a)
-#        plt.show()
-        
-        # remove crop, keep just resize
-        #a = a[:, :a.shape[0]][:self.discr[0], :self.discr[1]]
-        #print('check resize fake noise matrix')
         a = cv2.resize(a, self.discr_shape)
         return a
     
@@ -236,13 +203,7 @@ class FakeNoiseDataset:
             noise_matr = self.__preprocess__(path)
             
             # scale noise matrix
-            noise_matr = (noise_matr - noise_matr.min()) / (noise_matr.max() - noise_matr.min())
-            
-#            print('CHECK NOISE MATRIX AFTER SCALE')
-#            plt.figure()
-#            plt.imshow(noise_matr)
-#            plt.show()
-            
+            noise_matr = (noise_matr - noise_matr.min()) / (noise_matr.max() - noise_matr.min())            
             noise_data.append(noise_matr)
         return np.array(noise_data)    
     
