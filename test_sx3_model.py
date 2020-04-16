@@ -69,8 +69,8 @@ def gen_ds_dataset(global_path_i, global_path_q, discr_shape=(70,70), multipath_
 dataset_mp = SX3Dataset(label=1, global_path='sx3_data/outputs/mp')
 dataset_nomp = SX3Dataset(label=0, global_path='sx3_data/outputs/no_mp')
 
-data_mp = dataset_mp.build(discr_shape=(70,70), module_option=False)
-data_nomp = dataset_nomp.build(discr_shape=(70,70), module_option=False)[:500]
+data_mp = dataset_mp.build(discr_shape=(70,70), module_option=True)
+data_nomp = dataset_nomp.build(discr_shape=(70,70), module_option=True)[:500]
 
 dataset = np.concatenate((data_mp, data_nomp), axis=0)
 np.random.shuffle(dataset)
@@ -126,20 +126,20 @@ model.model.compile(loss='binary_crossentropy',
 #model.model = load_model('saved_models/sc2_fine_tune.pkl')
 
 #%% Train model: pretrain on data gen
-## define callbacks
-#checkpointer = ModelCheckpoint(filepath='saved_models/mp_detector_model.h5', verbose=1, save_best_only=True)
-#reduce_lr = ReduceLROnPlateau()
-#early_stopping = EarlyStopping(patience=5, min_delta=0.0001)
-#    
-#history = model.model.fit(
-#    x=X_train_synth,
-#    y=y_train_synth,
-#    validation_data=(X_val_synth, y_val_synth),
-#    epochs=train_iters,
-#    batch_size=batch_size,
-#    callbacks=[reduce_lr, early_stopping, checkpointer]
-#    )
-##save_model(model.model, 'saved_models/sc1_data_gen_train_zoom.pkl')
+# define callbacks
+checkpointer = ModelCheckpoint(filepath='saved_models/mp_detector_model.h5', verbose=1, save_best_only=True)
+reduce_lr = ReduceLROnPlateau()
+early_stopping = EarlyStopping(patience=5, min_delta=0.0001)
+    
+history = model.model.fit(
+    x=X_train_synth,
+    y=y_train_synth,
+    validation_data=(X_val_synth, y_val_synth),
+    epochs=train_iters,
+    batch_size=batch_size,
+    callbacks=[reduce_lr, early_stopping, checkpointer]
+    )
+#save_model(model.model, 'saved_models/sc1_data_gen_train_zoom.pkl')
 
 #%% Train model with augmentations
 datagen = ImageDataGenerator(
@@ -177,6 +177,11 @@ model.model.evaluate(
         batch_size=batch_size,
         verbose=1
         )
+
+#%% Plot augmentations
+
+plt.imshow(next(iter(datagen.flow(X_train_synth)))[0][...,0])
+plt.show()
 
 #%% visually compare matrices
 
