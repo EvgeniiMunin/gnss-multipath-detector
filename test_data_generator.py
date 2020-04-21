@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import json
 import glob
 import datetime
+import random
 #from keras.utils import to_categorical
 #from tqdm import tqdm, tqdm_notebook
 
@@ -19,16 +20,29 @@ from data_sampler import DataSampler
 from utils import visualize_plt#, visualize_3d_discr
 #from model import Model 
 
-
 #%%
+
+def signaltonoise(a, axis=0, ddof=0):
+    '''compute SNR for backward compatibility'''
+    a = np.asanyarray(a)
+    m = a.mean(axis)
+    sd = a.std(axis=axis, ddof=ddof)
+    return np.where(sd == 0, 0, m/sd)
+    
+#%%
+# coherent integration period
+Tint = 20e-3
+
 # Main for data generation 
-discr_size_fd = 40
-scale_code = 40
-delta_tau_interv = [0.1, 0.8]
-delta_dopp_interv = [-1000, 1000]
+discr_size_fd = 80
+scale_code = 80
+
+# multipath intervals
+delta_tau_interv = [0, 3/2]
+delta_dopp_max = min(3/Tint, 800) # 150
+delta_dopp_interv = [-delta_dopp_max, delta_dopp_max]
 delta_phase = 0
 alpha_att_interv = [0.5, 0.9]
-cn0_log=50
 
 # define intervals
 # chip rate/ period of PRN code
@@ -36,8 +50,7 @@ Fc = 1.023e6
 Tc = 1/Fc
 Nc = 1023
 Fs = 20e6
-# coherent integration period
-Tint = 1e-3
+
 # doppler interval
 dopp_max = min(5.5/Tint, 800+2.5/Tint)
 dopp_interval = [-dopp_max, dopp_max]
@@ -46,11 +59,11 @@ lC = 20000
 # code intervals
 tau_interval = [-3/2, 5/2]
 tau_prime_interval = [0, 4]
-#tau_max_left = Tc
-#tau_max_right = 2.5 * Tc
 
 
 #%% Check CorrDataset
+#random.seed(42)
+
 Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
                         scale_code=scale_code,
                         Tint=Tint,
@@ -67,6 +80,35 @@ samples = Dataset.build(nb_samples=1)
 visualize_plt(samples[0]['table'][...,0])
 visualize_plt(samples[0]['table'][...,1])
 #visualize_plt(samples[0]['module'][...,0])
+
+
+
+#%% check adjustment of noise coeff in data sampler
+
+# visualize nomp CN0 50
+ipaths = glob.glob('synth_data/no_mp/channel_i*.csv')
+qpaths = glob.glob('synth_data/no_mp/channel_q*.csv')
+
+for ind, (ipath, qpath) in enumerate(zip(ipaths, qpaths)):
+  synth_data_i = np.genfromtxt(ipath, delimiter=',')
+  synth_data_q = np.genfromtxt(qpath, delimiter=',')
+  
+plt.imshow(synth_data_i)
+
+# check signal to noise ratio
+signaltonoise(synth_data_i, axis=None)
+
+#%% Visualize sx3 snapshots
+ipaths = glob.glob('sx3_data/snapshots/*_I_*.csv')
+qpaths = glob.glob('sx3_data/snapshots/*_Q_*.csv')
+
+for ind, (ipath, qpath) in enumerate(zip(ipaths, qpaths)):
+    matr = pd.read_csv(paths_i[0], sep=',', header=None).values
+    matr = (matr - matr.min()) / (matr.max() - matr.min())
+plt.imshow(matr)
+
+# check signal to noise ratio
+signaltonoise(matr, axis=None)
 
 #%% Check CorrDataset generation for multipath case
 Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
@@ -235,29 +277,3 @@ def sum_matr(noise_tuple, sign_tuple):
         print('Matrices shapes are not corresponding: ', i_samples.shape, noise_samples.shape)
         
         
-
-    
-#%% Visualize peaks with plotly
-##for channel in ['I', 'Q', 'module']:
-##    for delta_phase in [0, np.pi/4, np.pi/2, np.pi]:
-#
-#channel = 'module'
-#delta_phase = 0
-#    
-#Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
-#                    scale_code=scale_code,
-#                    Tint=Tint,
-#                    multipath_option=False,
-#                    delta_tau_interv=delta_tau, 
-#                    delta_dopp_interv=delta_dopp,
-#                    delta_phase=delta_phase,
-#                    alpha_att_interv=alpha_att,
-#                    tau=tau, dopp=dopp)
-#
-#samples, module = Dataset.build(nb_samples=1)
-#
-#filename = 'visu_plotly/plotly_visu_phase-{}_channel-{}.html'.format(delta_phase, channel)
-#
-#img_dict = {'I': samples[0]['table'][...,0], 
-#            'Q': samples[0]['table'][...,1],
-#            'module': module}

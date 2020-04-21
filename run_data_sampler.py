@@ -17,8 +17,8 @@ def main():
     multipath_option = False if args.mp == '0' else True
     print('check multipath option before sampling: ', args.mp, multipath_option)
     
-    discr_size_fd = 40
-    scale_code = 40
+    discr_size_fd = 80
+    scale_code = 80
     delta_tau_interv = [0.1, 0.8]
     delta_dopp_interv = [-1000, 1000]
     delta_phase = 0
@@ -33,7 +33,7 @@ def main():
     Nc = 1023
     Fs = 20e6
     # coherent integration period
-    Tint = 1e-3
+    Tint = 20e-3
     # doppler interval
     dopp_max = min(5.5/Tint, 800+2.5/Tint)
     dopp_interval = [-dopp_max, dopp_max]

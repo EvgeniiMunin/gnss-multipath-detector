@@ -14,6 +14,9 @@ import matplotlib.pyplot as plt
 
 #from reference_feature_extractor import FeatureExtractor
 
+# adjustment coeffs
+SINC_WIDTH_COEF = 2
+
 class CorrDatasetV2():
   
     def __init__(self, discr_size_fd, scale_code,    
@@ -45,24 +48,38 @@ class CorrDatasetV2():
         self.sign_power = 8 * self.sign_amp / self.Tint**2
         self.noise_psd = self.sign_power / 10**(0.1*self.cn0_log)
         
-    def __sin_cos_matrix__(self, multipath=False, delta_dopp=0, delta_phase=0, xk=0, yk=0):
+    def __sin_cos_matrix__(self, multipath=False, delta_dopp=0  , delta_phase=0, xk=0, yk=0):
         dopp_axis = np.linspace(start=self.dopp[0],
                                 stop=self.dopp[1],
                                 num=self.discr_size_fd)
-        cos_array = np.array([math.cos(math.pi * (x + delta_dopp) * self.Tint + delta_phase) for x in dopp_axis])
-        sin_array = np.array([math.sin(math.pi * (x + delta_dopp) * self.Tint + delta_phase) for x in dopp_axis])
-        cos_matrix = np.tile(cos_array, (self.scale_code, 1))
-        sin_matrix = np.tile(sin_array, (self.scale_code, 1))
+        cos_array = np.array([math.cos(math.pi * x * self.Tint + delta_phase) for x in dopp_axis])
+        sin_array = np.array([math.sin(math.pi * x * self.Tint + delta_phase) for x in dopp_axis])
         
+        print(cos_array.shape, xk)
+        
+#        if multipath:
+#            if xk >= 0:
+#                cos_array = cos_array[:cos_array.shape[0]-xk]
+#                sin_array = sin_array[:sin_array.shape[0]-xk]
+#            else:
+#                cos_array = cos_array[abs(xk):]
+#                sin_array = sin_array[abs(xk):]
+        
+        return cos_array, sin_array
+        
+#        cos_matrix = np.tile(cos_array, (self.scale_code, 1))
+#        sin_matrix = np.tile(sin_array, (self.scale_code, 1))
+#        
         # reshape matrices in case of multipath
-        if multipath:
-            if xk >= 0:
-                cos_matrix = cos_matrix[:cos_matrix.shape[0]-xk, :cos_matrix.shape[1]-yk]
-                sin_matrix = sin_matrix[:sin_matrix.shape[0]-xk, :sin_matrix.shape[1]-yk]
-            else:
-                cos_matrix = cos_matrix[abs(xk):, :cos_matrix.shape[1]-yk]
-                sin_matrix = sin_matrix[abs(xk):, :sin_matrix.shape[1]-yk]
-        return cos_matrix, sin_matrix
+#        if multipath:
+#            if xk >= 0:
+#                cos_matrix = cos_matrix[:cos_matrix.shape[0]-xk, :cos_matrix.shape[1]-yk]
+#                sin_matrix = sin_matrix[:sin_matrix.shape[0]-xk, :sin_matrix.shape[1]-yk]
+#            else:
+#                cos_matrix = cos_matrix[abs(xk):, :cos_matrix.shape[1]-yk]
+#                sin_matrix = sin_matrix[abs(xk):, :sin_matrix.shape[1]-yk]
+#        return cos_matrix, sin_matrix
+        
             
     def __noise_model__(self):
         noise_corr_mean = 0
@@ -78,41 +95,57 @@ class CorrDatasetV2():
         #y_triang = np.linspace(0, 2, 20) + 0.5
         
         # Create empty matrix for peaks
-        matrix = np.zeros((self.discr_size_fd, self.scale_code))
-        matrix_tr = np.zeros((self.discr_size_fd, self.scale_code // 2))
+        matrix_i = np.zeros((self.discr_size_fd, self.scale_code))
+        matrix_q = np.zeros((self.discr_size_fd, self.scale_code))
+        matrix_tr_i = np.zeros((self.discr_size_fd, self.scale_code // 2))
+        matrix_tr_q = np.zeros((self.discr_size_fd, self.scale_code // 2))
         
         # Convert tau/ doppler deviation into pixel scale
         xk = int(x.mean() + delta_dopp / (x.max() - x.min()) * self.discr_size_fd)
         yk = int(y.mean() + delta_tau / (y.max() - y.min()) * self.scale_code)
         
+        # adjust xk
+        print('check xk, yk before: ', xk, yk)
+        if xk <= - matrix_i.shape[0] // 2:
+            xk = matrix_i.shape[0] - abs(xk)
+        if xk >= matrix_i.shape[0] // 2:
+            xk = -(matrix_i.shape[0] - abs(xk))
+        print('check xk, yk after: ', xk, yk)
         #yk_triang = int(y_triang.mean() + delta_tau / (y_triang.max() - y_triang.min()) * (self.scale_code // 2))
         
-        # Generate triangle/ sinc function
+        # Generate triangle function
         func1 = self.sign_amp * signal.triang(self.scale_code // 2)
-        func2 = self.sign_amp * np.sinc((x + delta_dopp) * self.Tint)
+        
+        # Generate sinc*sin / sinc*cos functions for I, Q channels 
+        sin_cos_array = self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)
+        print('check shapes: ', np.sinc((x + delta_dopp) * self.Tint * SINC_WIDTH_COEF).shape, sin_cos_array[0].shape)
+        func2i = self.sign_amp * np.sinc(x * self.Tint * SINC_WIDTH_COEF) * sin_cos_array[0]
+        func2q = self.sign_amp * np.sinc(x * self.Tint * SINC_WIDTH_COEF) * sin_cos_array[1]
+        
+        plt.plot(func2i)
+        plt.show()
         
         # Only 1 principal peak
-        for i, point in enumerate(func2):
-            matrix_tr[i] = alpha_att * func1 * point
+        for i, (pointi, pointq) in enumerate(zip(func2i, func2q)):
+            matrix_tr_i[i] = alpha_att * func1 * pointi
+            matrix_tr_q[i] = alpha_att * func1 * pointq
 
         # sum matrix_tr and matrix of background according interval offset
-        matrix[:, 5:(self.scale_code // 2 + 5)] = matrix_tr
+        matrix_i[:, 5:(self.scale_code // 2 + 5)] = matrix_tr_i
+        matrix_q[:, 5:(self.scale_code // 2 + 5)] = matrix_tr_q
         
         # Superpose 2 peaks. Weight matrix of MP peak by the matrix of principal peak 
         if multipath:
-            #print('check xk, yk: ', xk, yk)
+            print('delta dopp/ tau/ phase: ', delta_dopp, delta_tau, delta_phase)
             if xk >= 0:
-                matrix = matrix[:matrix.shape[0]-xk, :matrix.shape[1]-yk]
+                matrix_i = matrix_i[:matrix_i.shape[0]-xk, :matrix_i.shape[1]-yk]
+                matrix_q = matrix_q[:matrix_q.shape[0]-xk, :matrix_q.shape[1]-yk]
             else:
-                matrix = matrix[abs(xk):, :matrix.shape[1]-yk]
+                matrix_i = matrix_i[abs(xk):, :matrix_i.shape[1]-yk]
+                matrix_q = matrix_q[abs(xk):, :matrix_q.shape[1]-yk]
         
-        # Split matrices in I, Q channels
-        I = matrix * self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[0]
-        # put all the signal on I channel (0 in Q channel) except mp case
-        if multipath:            
-            Q = -matrix * self.__sin_cos_matrix__(multipath=multipath, delta_dopp=delta_dopp, delta_phase=delta_phase, xk=xk, yk=yk)[1]
-        else:
-            Q = np.zeros_like(matrix)
+        I = matrix_i 
+        Q = matrix_q
         
         module = np.sqrt(I**2 + Q**2)
        
@@ -128,6 +161,16 @@ class CorrDatasetV2():
        
         return matrix, xk, yk
 # -----------------------------------------------------------------------------
+        
+    def corr(a):
+      peak_idx = np.unravel_index(np.argmax(a), a.shape)
+      #print('check shape before crop: ', a.shape, peak_idx)
+      #print('check shape after crop: ', a.shape)
+      a_kernel = np.flip(a, axis=0)
+      a_kernel = np.flip(a_kernel, axis=1)
+      a_pad = np.pad(a, (a.shape[0]//2, a.shape[1]//2), mode='constant')
+      a_conv = convolve(a_pad, a_kernel, mode='constant', cval=0)
+      return a_conv
   
     def build(self, nb_samples=10, ref_features=False, sec_der=False, four_ch=False):
         data_samples = []
@@ -149,13 +192,18 @@ class CorrDatasetV2():
                                                          alpha_att=alpha_atti,
                                                          ref_features=ref_features)
                 
+                print('plot matrix mp/ shape', matrix_mp.shape)
+                plt.imshow(matrix_mp[...,0])
+                plt.show()
                 
                 if x >= 0:
                     #matrix[x:, y:] = matrix[x:, y:] * matrix_mp + matrix[x:, y:]
+                    print('shift: ', x, y)
                     matrix[x:, y:] = matrix_mp + matrix[x:, y:]
                     #module[x:, y:] = module[x:, y:] * module_mp + module[x:, y:]
                 else:
                     #matrix[:matrix.shape[0]-abs(x), y:] = matrix[:matrix.shape[0]-abs(x), y:] * matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
+                    print('shift: ', matrix.shape[0]-abs(x), y)
                     matrix[:matrix.shape[0]-abs(x), y:] = matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
                     #module[:matrix.shape[0]-abs(x), y:] = module[:matrix.shape[0]-abs(x), y:] * module_mp + module[:matrix.shape[0]-abs(x), y:]
                 

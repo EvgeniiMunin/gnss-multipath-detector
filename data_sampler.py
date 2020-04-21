@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 
 #import json
 import glob
@@ -10,6 +11,8 @@ import datetime
 from data_generator import CorrDatasetV2, FakeNoiseDataset
 
 import matplotlib.pyplot as plt
+
+NOISE_COEF = 1
 
 class DataSampler:
     
@@ -53,8 +56,8 @@ class DataSampler:
         p = (self.noise_i_samples[0]**2 + self.noise_q_samples[0]**2).max()
         var_i = np.var(self.noise_i_samples[0])
         var_q = np.var(self.noise_q_samples[0])
-        noise_factor_i = np.sqrt(p / (2 * var_i * self.Tint * self.cn0))
-        noise_factor_q = np.sqrt(p / (2 * var_q * self.Tint * self.cn0))
+        noise_factor_i = np.sqrt(p / (2 * var_i * self.Tint * self.cn0)) * NOISE_COEF
+        noise_factor_q = np.sqrt(p / (2 * var_q * self.Tint * self.cn0)) * NOISE_COEF
         
         #print('check matrix min/max before factor: ', self.noise_i_samples.min(), self.noise_i_samples.max())
         #print('check noise factor: ', noise_factor_i, noise_factor_q)
@@ -65,6 +68,9 @@ class DataSampler:
         # paths = glob.glob('corr_noise_generator/outputs/q_channel/*.csv')
         self.noise_i_samples *= noise_factor_i
         self.noise_q_samples *= noise_factor_q 
+        
+        self.noise_i_samples = np.transpose(self.noise_i_samples, [0,2,1])
+        self.noise_q_samples = np.transpose(self.noise_q_samples, [0,2,1])
         
         #print('check matrix min/max after factor: ', self.noise_i_samples.min(), self.noise_i_samples.max())
     

@@ -269,3 +269,10 @@ sns.distplot(noise_i_samples.flatten())
 plt.title('Corr noise I channel')
 plt.show()
 
+#%% Visualize sx3 snapshots
+data_path_i = 'sx3_data/snapshots/*_I_*.csv'
+data_path_q = 'sx3_data/snapshots/*_Q_*.csv'
+paths_i = glob.glob(data_path_i)
+paths_q = glob.glob(data_path_q)
+
+matr = pd.read_csv(paths_i[0], sep=',', header=None).values
