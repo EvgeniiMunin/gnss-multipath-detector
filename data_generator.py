@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import math
 from scipy import signal
+from scipy import ndimage
 import cv2
 
 import matplotlib.pyplot as plt
@@ -147,29 +148,27 @@ class CorrDatasetV2():
         I = matrix_i 
         Q = matrix_q
         
-        module = np.sqrt(I**2 + Q**2)
+        #module = np.sqrt(I**2 + Q**2)
        
-        I_norm = (I - module.min()) / (module.max() - module.min())
-        Q_norm = (Q - module.min()) / (module.max() - module.min())
+        #I_norm = (I - module.min()) / (module.max() - module.min())
+        #Q_norm = (Q - module.min()) / (module.max() - module.min())
         
-        module = (module - module.min()) / (module.max() - module.min())
+        #module = (module - module.min()) / (module.max() - module.min())
         
-        I_norm = I_norm[...,None]
-        Q_norm = Q_norm[...,None]
+        I = I[...,None]
+        Q = Q[...,None]
 
-        matrix = np.concatenate((I_norm, Q_norm), axis=2)
+        matrix = np.concatenate((I, Q), axis=2)
        
         return matrix, xk, yk
 # -----------------------------------------------------------------------------
         
-    def corr(a):
-      peak_idx = np.unravel_index(np.argmax(a), a.shape)
-      #print('check shape before crop: ', a.shape, peak_idx)
-      #print('check shape after crop: ', a.shape)
-      a_kernel = np.flip(a, axis=0)
-      a_kernel = np.flip(a_kernel, axis=1)
-      a_pad = np.pad(a, (a.shape[0]//2, a.shape[1]//2), mode='constant')
-      a_conv = convolve(a_pad, a_kernel, mode='constant', cval=0)
+    def __corr__(self, a, kernel):
+      kernel = np.flip(kernel, axis=0)
+      kernel = np.flip(kernel, axis=1)
+      #a_pad = np.pad(a, (a.shape[0]//2, a.shape[1]//2), mode='constant')
+      #a_conv = ndimage.convolve(a, kernel, mode='constant', cval=0)
+      a_conv = signal.convolve2d(a, kernel, mode='same')
       return a_conv
   
     def build(self, nb_samples=10, ref_features=False, sec_der=False, four_ch=False):
@@ -197,20 +196,26 @@ class CorrDatasetV2():
                 plt.show()
                 
                 if x >= 0:
+                    matrix[...,0] = self.__corr__(matrix[...,0], matrix_mp[...,0])
+                    matrix[...,1] = self.__corr__(matrix[...,1], matrix_mp[...,1])
+                    #matrix = convolve(matrix, matrix_mp, mode='constant', cval=0)
                     #matrix[x:, y:] = matrix[x:, y:] * matrix_mp + matrix[x:, y:]
                     print('shift: ', x, y)
-                    matrix[x:, y:] = matrix_mp + matrix[x:, y:]
-                    #module[x:, y:] = module[x:, y:] * module_mp + module[x:, y:]
+                    #matrix[x:, y:] = matrix_mp + matrix[x:, y:]
                 else:
+                    matrix[...,0] = self.__corr__(matrix[...,0], matrix_mp[...,0])
+                    matrix[...,1] = self.__corr__(matrix[...,1], matrix_mp[...,1])
+                    #matrix = self.__corr__(matrix, matrix_mp)
+                    #matrix = convolve(matrix, matrix_mp, mode='constant', cval=0)
                     #matrix[:matrix.shape[0]-abs(x), y:] = matrix[:matrix.shape[0]-abs(x), y:] * matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
                     print('shift: ', matrix.shape[0]-abs(x), y)
-                    matrix[:matrix.shape[0]-abs(x), y:] = matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
-                    #module[:matrix.shape[0]-abs(x), y:] = module[:matrix.shape[0]-abs(x), y:] * module_mp + module[:matrix.shape[0]-abs(x), y:]
-                
-                
+                    #matrix[:matrix.shape[0]-abs(x), y:] = matrix_mp + matrix[:matrix.shape[0]-abs(x), y:]
             else:
                 matrix, x, y = self.__generate_peak__(delta_phase=self.delta_phase, 
                                                           ref_features=ref_features)
+            
+            matrix[...,0] = (matrix[...,0] - matrix[...,0].min()) / (matrix[...,0].max() - matrix[...,0].min())
+            matrix[...,1] = (matrix[...,1] - matrix[...,1].min()) / (matrix[...,1].max() - matrix[...,1  ].min())
             
             module = matrix[...,0] ** 2 + matrix[...,1] ** 2
             data['table'] = matrix

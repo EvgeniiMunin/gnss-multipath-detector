@@ -28,7 +28,6 @@ class IRModel:
     def __init__(self, h5_path, tf_path):
         self.keras_model_path = h5_path #'saved_models/best_model/best_mp_model.h5'
         self.tf_path = tf_path # 'tf_mp_model.pb'
-        self.ir_path = ir_path
     
     def __freeze_session__(self, session, keep_var_names=None, output_names=None, clear_devices=True):
         '''freeze state of a session into a pruned compilation graph '''
@@ -46,7 +45,7 @@ class IRModel:
                                                           output_names, freeze_var_names)
             return frozen_graph
         
-    def __build_tf_graph__(self):
+    def build_tf_graph(self):
         '''keras to tf conversion'''
         # loading keras model
         K.set_learning_phase(0)
@@ -64,7 +63,3 @@ class IRModel:
         tf.train.write_graph(frozen_graph, 'saved_models/tf_model', self.tf_path, as_text=False)
             
         
-    def build_ir_model(self, ir_shell_script):
-        '''convert tensorflow graph to ir_model (from terminal or bash)'''
-        ! chmod 744 convert_tf_ncs2.sh
-        ! ./convert_tf_ncs2.sh

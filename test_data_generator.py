@@ -39,7 +39,7 @@ scale_code = 80
 
 # multipath intervals
 delta_tau_interv = [0, 3/2]
-delta_dopp_max = min(3/Tint, 800) # 150
+delta_dopp_max = min(3/Tint, 800)
 delta_dopp_interv = [-delta_dopp_max, delta_dopp_max]
 delta_phase = 0
 alpha_att_interv = [0.5, 0.9]
@@ -57,17 +57,18 @@ dopp_interval = [-dopp_max, dopp_max]
 # length of local PRN code
 lC = 20000
 # code intervals
-tau_interval = [-3/2, 5/2]
+tau_interval = [-3/2, 6/2]
 tau_prime_interval = [0, 4]
 
 
 #%% Check CorrDataset
 #random.seed(42)
+multipath_option = True
 
 Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
                         scale_code=scale_code,
                         Tint=Tint,
-                        multipath_option=True,
+                        multipath_option=multipath_option,
                         delta_tau_interv=delta_tau_interv,
                         delta_dopp_interv=delta_dopp_interv,
                         delta_phase=delta_phase,
@@ -81,7 +82,8 @@ visualize_plt(samples[0]['table'][...,0])
 visualize_plt(samples[0]['table'][...,1])
 #visualize_plt(samples[0]['module'][...,0])
 
-
+#np.savetxt(r'synth_data/valid_data/channel_i_mp-{}.csv'.format(multipath_option), samples[0]['table'][...,0], delimiter=',')
+#np.savetxt(r'synth_data/valid_data/channel_q_mp-{}.csv'.format(multipath_option), samples[0]['table'][...,1], delimiter=',')
 
 #%% check adjustment of noise coeff in data sampler
 
