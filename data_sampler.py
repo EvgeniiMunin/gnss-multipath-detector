@@ -94,7 +94,7 @@ class DataSampler:
         self.i_samples = np.array(list(map(sample_i_func, samples)))
         self.q_samples = np.array(list(map(sample_q_func, samples)))
     
-    def sum_matr(self, save_csv=True):
+    def sum_matr(self, save_csv=True, save_path=None):
         #noise_i_samples, noise_q_samples = noise_tuple
         #i_samples, q_samples = sign_tuple
         
@@ -135,11 +135,12 @@ class DataSampler:
                     datetime_now = datetime.datetime.now()
                     # save i/q_channel
                     if self.multipath_option:
-                        pathi = r'synth_data/mp/channel_i_{}.csv'.format(str(datetime_now))
-                        pathq = r'synth_data/mp/channel_q_{}.csv'.format(str(datetime_now))    
+                        pathi = save_path + 'mp/channel_i_{}.csv'.format(str(datetime_now))
+                        pathq = save_path + 'mp/channel_q_{}.csv'.format(str(datetime_now))    
                     else:
-                        pathi = r'synth_data/no_mp/channel_i_{}.csv'.format(str(datetime_now))
-                        pathq = r'synth_data/no_mp/channel_q_{}.csv'.format(str(datetime_now))
+                        pathi = save_path + 'no_mp/channel_i_{}.csv'.format(str(datetime_now))
+                        pathq = save_path + 'no_mp/channel_q_{}.csv'.format(str(datetime_now))
+                    print(pathi)
                     np.savetxt(pathi, matr_i[i,...], delimiter=',')
                     np.savetxt(pathq, matr_q[i,...], delimiter=',')
             else:

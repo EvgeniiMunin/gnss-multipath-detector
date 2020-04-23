@@ -39,8 +39,8 @@ def gen_ds_dataset(global_path_i, global_path_q, discr_shape=(70,70), multipath_
         matr_q = cv2.resize(pd.read_csv(path_q, sep=',', header=None).values, discr_shape)
         
         # rotate 90 deg counter clockwise
-        matr_i = cv2.rotate(matr_i, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        matr_q = cv2.rotate(matr_q, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        #matr_i = cv2.rotate(matr_i, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        #matr_q = cv2.rotate(matr_q, cv2.ROTATE_90_COUNTERCLOCKWISE)
         
         if module_option:
             print('check module option')
@@ -143,12 +143,12 @@ history = model.model.fit(
 
 #%% Train model with augmentations
 datagen = ImageDataGenerator(
-        featurewise_center=True,
-        featurewise_std_normalization=True,
-        rotation_range=20,
+        #featurewise_center=True,
+        #featurewise_std_normalization=True,
+        #rotation_range=20,
         width_shift_range=0.2,
         height_shift_range=0.2,
-        horizontal_flip=True
+        #horizontal_flip=True
         )
 
 datagen.fit(X_train_synth)

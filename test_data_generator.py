@@ -34,8 +34,8 @@ def signaltonoise(a, axis=0, ddof=0):
 Tint = 20e-3
 
 # Main for data generation 
-discr_size_fd = 80
-scale_code = 80
+discr_size_fd = 40
+scale_code = 40
 
 # multipath intervals
 delta_tau_interv = [0, 3/2]
@@ -57,7 +57,7 @@ dopp_interval = [-dopp_max, dopp_max]
 # length of local PRN code
 lC = 20000
 # code intervals
-tau_interval = [-3/2, 6/2]
+tau_interval = [-3/2, 5/2]
 tau_prime_interval = [0, 4]
 
 
