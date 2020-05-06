@@ -13,8 +13,8 @@ import cv2
 
 class SX3Dataset():
   def __init__(self, label=0, global_path='test_subset/mp_'):
-    self.global_path_i = global_path + '_i/*'
-    self.global_path_q = global_path + '_q/*'
+    self.global_path_i = global_path + '/*I*.csv'
+    self.global_path_q = global_path + '/*Q*.csv'
     self.label = label
     self.data_samples = []
 
@@ -36,16 +36,22 @@ class SX3Dataset():
     matr_resize = cv2.resize(matr_crop, self.discr_shape)
     
     # scale matr
-    matr_resize = (matr_resize - matr_resize.min()) / (matr_resize.max() - matr_resize.min())
+    # matr_resize = (matr_resize - matr_resize.min()) / (matr_resize.max() - matr_resize.min())
     
     #print('check processed matrix shape: ', matr_resize.shape)
     return matr_resize
 
-  def build(self, discr_shape=(40,40), module_option=False):
+  def build(self, discr_shape=(40,40), module_option=False, nb_samples=None):
     self.discr_shape = discr_shape
-
-    paths_i = glob.glob(self.global_path_i)
-    paths_q = glob.glob(self.global_path_q)
+    
+    if nb_samples is None:
+        paths_i = glob.glob(self.global_path_i)
+        print('check paths_i: ', paths_i[:5])
+        paths_q = glob.glob(self.global_path_q)
+    else:
+        paths_i = glob.glob(self.global_path_i)[:nb_samples]
+        paths_q = glob.glob(self.global_path_q)[:nb_samples]
+    
     for path_i, path_q in zip(paths_i, paths_q):
         img_i =  self.__build_matr__(path_i)
         img_q =  self.__build_matr__(path_q)
@@ -54,8 +60,11 @@ class SX3Dataset():
             img = (img_i**2 + img_q**2)[...,None]
             img = (img - img.min()) / (img.max() - img.min())
         else:
-            img_i = (img_i - img_i.min()) / (img_i.max() - img_i.min())
-            img_q = (img_q - img_q.min()) / (img_q.max() - img_q.min())
+            #print('check scsling on module')
+            img = np.sqrt(img_i**2 + img_q**2)
+            
+            img_i = (img_i - img.min()) / (img.max() - img.min())
+            img_q = (img_q - img.min()) / (img.max() - img.min())
             
             img_i = img_i[...,None]
             img_q = img_q[...,None]

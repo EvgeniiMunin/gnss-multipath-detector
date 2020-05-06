@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 #from reference_feature_extractor import FeatureExtractor
 
 # adjustment coeffs
-SINC_WIDTH_COEF = 2
+SINC_WIDTH_COEF = 1
 
 class CorrDatasetV2():
   
@@ -150,7 +150,7 @@ class CorrDatasetV2():
                                                           ref_features=ref_features)
             
             
-            module = matrix[...,0] ** 2 + matrix[...,1] ** 2
+            module = np.sqrt(matrix[...,0] ** 2 + matrix[...,1] ** 2)
             matrix[...,0] = (matrix[...,0] - module.min()) / (module.max() - module.min())
             matrix[...,1] = (matrix[...,1] - module.min()) / (module.max() - module.min())
             module = (module - module.min()) / (module.max() - module.min())

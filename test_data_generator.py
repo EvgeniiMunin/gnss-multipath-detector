@@ -101,11 +101,11 @@ plt.imshow(synth_data_i)
 signaltonoise(synth_data_i, axis=None)
 
 #%% Visualize sx3 snapshots
-ipaths = glob.glob('sx3_data/snapshots/*_I_*.csv')
-qpaths = glob.glob('sx3_data/snapshots/*_Q_*.csv')
+ipaths = glob.glob('sx3_data/visu_sx3/*_i_vis.csv')
+qpaths = glob.glob('sx3_data/visu_sx3/*_q_vis.csv')
 
 for ind, (ipath, qpath) in enumerate(zip(ipaths, qpaths)):
-    matr = pd.read_csv(paths_i[0], sep=',', header=None).values
+    matr = pd.read_csv(ipath, sep=',', header=None).values
     matr = (matr - matr.min()) / (matr.max() - matr.min())
 plt.imshow(matr)
 
@@ -177,105 +177,4 @@ for cn0_log in [20, 30, 40, 50, 60]:
     matr_i, matr_q = data_sampler.sum_matr(save_csv=False)
 
 plt.imshow(matr_i[0,...])
-#%% check FakeNoiseDataset
-import glob
 
-noise_factor = 0.5
-
-temp = FakeNoiseDataset()
-paths = glob.glob('corr_noise_generator/outputs/*.csv')
-noise_samples = temp.build(paths)
-noise_samples *= noise_factor
-
-#%% concatenate matrices samples / noise_samples
-# sample I, Q channel
-sample_i_func = lambda x: x['table'][...,0]
-sample_q_func = lambda x: x['table'][...,1]
-i_samples = np.array(list(map(sample_i_func, samples)))
-q_samples = np.array(list(map(sample_q_func, samples)))
-
-# check matrices shapes
-try:
-    matr_i = np.sum([i_samples, noise_samples], axis=0)
-    matr_q = np.sum([i_samples, noise_samples], axis=0)
-    
-    # save matrix into csv
-    for i in range(matr_i.shape[0]):
-        # save q_channel
-        path = r'synth_data/no_mp/channel_i_{}.csv'.format(str(datetime.datetime.now()))
-        np.savetxt(path, matr_i[i,...], delimiter=',')
-        # save i_channel
-        path = r'synth_data/no_mp/channel_q_{}.csv'.format(str(datetime.datetime.now()))
-        np.savetxt(path, matr_q[i,...], delimiter=',')
-        
-except ValueError:
-    print('Matrices shapes are not corresponding: ', i_samples.shape, noise_samples.shape)
-
-#%% create methods to automize matrices processing
-
-def read_noise(paths, noise_factor=0.5):
-    temp = FakeNoiseDataset()
-    # read i channel 
-    paths = glob.glob('corr_noise_generator/outputs/i_channel/*.csv')
-    noise_i_samples = temp.build(paths)
-    noise_i_samples *= noise_factor
-    
-    # read q channel
-    paths = glob.glob('corr_noise_generator/outputs/q_channel/*.csv')
-    noise_q_samples = temp.build(paths)
-    noise_q_samples *= noise_factor   
-    return noise_i_samples, noise_q_samples
-
-def generate_corr(config, nb_samples=13):
-    # no_mp option
-    Dataset = CorrDatasetV2(discr_size_fd=discr_size_fd,
-                        scale_code=scale_code,
-                        Tint=Tint,
-                        multipath_option=False,
-                        delta_tau_interv=delta_tau, 
-                        delta_dopp_interv=delta_dopp,
-                        delta_phase=delta_phase,
-                        alpha_att_interv=alpha_att,
-                        tau=tau, dopp=dopp,
-                        cn0_log=cn0_log)
-    # mp option
-    Dataset_mp = CorrDatasetV2(discr_size_fd=discr_size_fd,
-                            scale_code=scale_code,
-                            Tint=Tint,
-                            multipath_option=True,
-                            delta_tau_interv=delta_tau, 
-                            delta_dopp_interv=delta_dopp,
-                            delta_phase=delta_phase,
-                            alpha_att_interv=alpha_att,
-                            tau=tau, dopp=dopp)
-    
-    samples = Dataset.build(nb_samples=13)
-    # extract separately I,Q channels
-    sample_i_func = lambda x: x['table'][...,0]
-    sample_q_func = lambda x: x['table'][...,1]
-    i_samples = np.array(list(map(sample_i_func, samples)))
-    q_samples = np.array(list(map(sample_q_func, samples)))
-    return i_samples, q_samples
-
-def sum_matr(noise_tuple, sign_tuple):
-    noise_i_samples, noise_q_samples = noise_tuple
-    i_samples, q_samples = sign_tuple
-    
-    # check matrices shapes
-    try:
-        matr_i = np.sum([i_samples, noise_i_samples], axis=0)
-        matr_q = np.sum([q_samples, noise_q_samples], axis=0)
-        
-        # save matrix into csv
-        for i in range(matr_i.shape[0]):
-            # save i_channel
-            path = r'synth_data/no_mp/channel_i_{}.csv'.format(str(datetime.datetime.now()))
-            np.savetxt(path, matr_i[i,...], delimiter=',')
-            # save q_channel
-            path = r'synth_data/no_mp/channel_q_{}.csv'.format(str(datetime.datetime.now()))
-            np.savetxt(path, matr_q[i,...], delimiter=',')
-            
-    except ValueError:
-        print('Matrices shapes are not corresponding: ', i_samples.shape, noise_samples.shape)
-        
-        
