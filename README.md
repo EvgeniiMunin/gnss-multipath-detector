@@ -2,7 +2,9 @@
 
 The model generates the synthetic multipath anomaly in GPS L1 C/A signals and provides the CNN model to predict the presence of multipath in real and synthetic signal.
 
-## Hardware
+## Hardware/ Software
+- GPU: 1xTesla K80
+- Keras
 
 
 ## Synthetic GNSS data generation and preparation
@@ -20,6 +22,11 @@ Then execute the ```run_data_sampler.py``` script to generate the correlator out
 cd ..
 python run_data_sampler.py --mp=<MULTIPATH (0 or 1)> --nb_samples=<NB_SAMPLES> --cn0=<CARRIER-TO-NOISE RATIO in dBHz> --discr=<DISCR LEVEL>
 ```
+
+## DL Model
+- MobileNet
+- DenseNet121
+The architectures were chosen as they are both suitable for mobile and embedded based CV applications where there are constraints of RAM and memory. The both architectures are produced by Google.
 
 ## Inference
 To run the inference  run the script ```test_sx3_model.py``` giving the path for the input image converted into ```.csv``` format.
