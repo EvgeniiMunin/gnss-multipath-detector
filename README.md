@@ -26,6 +26,7 @@ python run_data_sampler.py --mp=<MULTIPATH (0 or 1)> --nb_samples=<NB_SAMPLES> -
 ## DL Model
 - MobileNet
 - DenseNet121
+
 The architectures were chosen as they are both suitable for mobile and embedded based CV applications where there are constraints of RAM and memory. The both architectures are produced by Google.
 
 ## Inference
