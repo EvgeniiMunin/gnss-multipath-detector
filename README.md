@@ -5,7 +5,7 @@ The model to predict the multipath anomaly in GPS L1 C/A signals
 
 
 ## Synthetic GNSS data generation and preparation
-To generate the  you first need to give the execution permission to the run_acquisition_sampling.sh script
+To generate the  you first need to give the execution permission to the ```run_acquisition_sampling.sh``` script
 ```
 chmod +x ./run_acquisition_sampling.sh
 ```
