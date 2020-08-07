@@ -1,4 +1,4 @@
-# gnss_signal_generator
+# gnss-multipath-detector
 
 The model generates the synthetic multipath anomaly in GPS L1 C/A signals and provides the CNN model to predict the presence of multipath in real and synthetic signal.
 
