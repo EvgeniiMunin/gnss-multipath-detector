@@ -11,13 +11,16 @@ Then run the container as follows on the port 5000. This runs the server and mak
 ```
 docker run -it -p 5000:5000 mp-app-mod
 ```
-Download two .csv files for I,Q channels and move them to your current directory. To make the prediction open another terminal window and run the following
+Download two .csv files for I,Q channels and move them to your current directory. To make the prediction of probability of multipath  open another terminal window and run the following command
 ```
-curl -X POST -F matrixi=@dog.jpg http://localhost:5000/predict
+curl -X POST -F matrixi=@imgi.csv -F matrixq=@imgq.csv http://localhost:5000/predict
 ```
 
 ## Deployment
-
+The multipath detection app is also deployed on the GCP Kubernetes cluster and is available publicly by the API. To make the prediction run the following command
+```
+curl -X POST -F matrixi=@imgi.csv -F matrixq=@imgq.csv http://35.226.109.248:5000/predict
+```
 
 ## Hardware/ Software
 - GPU: 1xTesla K80
