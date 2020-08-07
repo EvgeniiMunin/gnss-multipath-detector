@@ -2,13 +2,29 @@
 
 The model generates the synthetic multipath anomaly in GPS L1 C/A signals and provides the CNN model to predict the presence of multipath in real and synthetic signal.
 
+## Installation
+To get started with pretrained multipath detection model based on MobileNet please pull the Docker image from DockerHub repository
+```
+docker pull evgeniimunin/mp-app-mod:latest
+```
+Then run the container as follows on the port 5000. This runs the server and makes it listen 
+```
+docker run -it -p 5000:5000 mp-app-mod
+```
+Download two .csv files for I,Q channels and move them to your current directory. To make the prediction open another terminal window and run the following
+```
+curl -X POST -F matrixi=@dog.jpg http://localhost:5000/predict
+```
+
+## Deployment
+
+
 ## Hardware/ Software
 - GPU: 1xTesla K80
 - Keras
 
-
 ## Synthetic GNSS data generation and preparation
-To generate the  you first need to give the execution permission to the ```run_acquisition_sampling.sh``` script
+To generate the GNSS correlator output data you first need to give the execution permission to the ```run_acquisition_sampling.sh``` script
 ```
 chmod +x ./run_acquisition_sampling.sh
 ```
@@ -34,7 +50,6 @@ To run the inference  run the script ```test_sx3_model.py``` giving the path for
 
 ## Inference on Visual Processign Unit (VPU) Movidius Neural Compute Stick 2 (NCS2)
 The script for running the inference on the NCS2 is located in the notebook ```convert_keras_ncs2_mpcnn.ipynb```. Here the trained Keras model is converted into Tensorflow computation graph and then into IR model compatible with NCS2.
-
 
 
 
