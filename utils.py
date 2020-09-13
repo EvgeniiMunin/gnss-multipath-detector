@@ -4,6 +4,88 @@ import matplotlib.pyplot as plt
 #import plotly.graph_objs as go
 #from plotly import plotly as ply
 import pickle
+import glob
+import pandas as pd
+from tqdm.notebook import tqdm
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import Input, UpSampling2D, Conv2D, Flatten, BatchNormalization, Dense, Dropout, GlobalAveragePooling2D
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
+
+def load_ds_data(discr, data_path, nb_samples=None):
+    '''prepare data generator data '''
+    global_path_mp_i = data_path + 'synth_data/discr_{}_v1/mp/*_i_*'.format(discr)
+    global_path_mp_q = data_path + 'synth_data/discr_{}_v1/mp/*_q_*'.format(discr)
+    global_path_nomp_i = data_path + 'synth_data/discr_{}_v1/no_mp/*_i_*'.format(discr)
+    global_path_nomp_q = data_path + 'synth_data/discr_{}_v1/no_mp/*_q_*'.format(discr)
+    if nb_samples is None:
+        paths_mp_i = sorted(glob.glob(global_path_mp_i))
+        paths_mp_q = sorted(glob.glob(global_path_mp_q))
+        paths_nomp_i = sorted(glob.glob(global_path_nomp_i))
+        paths_nomp_q = sorted(glob.glob(global_path_nomp_q))
+    else:
+        paths_mp_i = sorted(glob.glob(global_path_mp_i))[:nb_samples]
+        paths_mp_q = sorted(glob.glob(global_path_mp_q))[:nb_samples]
+        paths_nomp_i = sorted(glob.glob(global_path_nomp_i))[:nb_samples]
+        paths_nomp_q = sorted(glob.glob(global_path_nomp_q))[:nb_samples]
+
+    synth_data_samples_mp = []
+    synth_data_labels = []
+    for path_mp_i, path_mp_q in tqdm(zip(paths_mp_i, paths_mp_q)):
+        matr_i = pd.read_csv(path_mp_i, sep=',', header=None).values
+        matr_q = pd.read_csv(path_mp_q, sep=',', header=None).values
+        matr_i = matr_i[...,None]
+        matr_q = matr_q[...,None]
+        matr = np.concatenate((matr_i, matr_q), axis=2)
+        #matr = matr_i**2 + matr_q**2
+        synth_data_samples_mp.append(matr)
+        synth_data_labels.append(1)
+
+    synth_data_samples_nomp = []
+    for path_nomp_i, path_nomp_q in tqdm(zip(paths_nomp_i, paths_nomp_q)):
+        matr_i = pd.read_csv(path_nomp_i, sep=',', header=None).values
+        matr_q = pd.read_csv(path_nomp_q, sep=',', header=None).values
+        matr_i = matr_i[...,None]
+        matr_q = matr_q[...,None]
+        matr = np.concatenate((matr_i, matr_q), axis=2)
+        #matr = matr_i**2 + matr_q**2
+        synth_data_samples_nomp.append(matr)
+        synth_data_labels.append(0)
+
+    synth_data_samples = np.concatenate([synth_data_samples_mp, synth_data_samples_nomp], axis=0)
+    synth_data_labels = np.array(synth_data_labels)
+
+    X_train_synth, X_val_synth, y_train_synth, y_val_synth = train_test_split(synth_data_samples, synth_data_labels, test_size=0.05, shuffle=True)
+    
+    return X_train_synth, X_val_synth, y_train_synth, y_val_synth
+
+
+def build_model(backbone, input_shape, is_trainable=True):
+  '''
+  implementation taken from pudae
+  https://github.com/pudae/kaggle-hpa/blob/master/models/model_factory.py
+  '''
+  for layer in backbone.layers:
+      layer.trainable = is_trainable
+  model = Sequential()
+  model.add(Conv2D(3, (3,3), activation='relu', padding='same', input_shape=(80,80,2)))   
+  model.add(backbone)
+  model.add(GlobalAveragePooling2D())
+  model.add(Dense(256, activation='relu'))
+  model.add(Dropout(0.25))
+  model.add(BatchNormalization())
+  model.add(Dense(1, activation='sigmoid'))
+  return model
+
+def model_eval(model, X, y, model_name, threshold):
+  probas = model.predict(X)
+  preds = np.where(probas >= threshold, 1, 0)
+  acc = accuracy_score(preds, y)
+  f1 = f1_score(preds, y)
+  print('best acc: {:.5}, best f1: {:.5}'.format(acc, f1))
+  model.save('best_{}_{:.5f}.h5'.format(model_name, acc))
+
 
 def save_model(model, file_name):
     """

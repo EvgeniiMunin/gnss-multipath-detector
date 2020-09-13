@@ -1,0 +1,6 @@
+keras==2.3.1
+tensorflow==1.15.2
+scipy==1.3.1
+flask
+pandas
+opencv-python
