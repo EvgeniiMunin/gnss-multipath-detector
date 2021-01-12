@@ -43,8 +43,8 @@ def main():
     
     print('MODS IN INTERVALS CHECKED')  
     
-    noise_i_path = r'corr_noise_generator/outputs/i_channel/*.csv'
-    noise_q_path = r'corr_noise_generator/outputs/q_channel/*.csv'
+    noise_i_path = r'corr_noise_gen/outputs/i_channel/*.csv'
+    noise_q_path = r'corr_noise_gen/outputs/q_channel/*.csv'
     
     save_path = r'synth_data/discr_{}/'.format(discr_size_fd)
     

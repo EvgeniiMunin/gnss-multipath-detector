@@ -29,6 +29,9 @@ for k = 1:1023;
     G1(1)=G1(3)*G1(10);
     G1(2:10) = [tmp G1(2:9)];
     % Generator 2 - shift reg 2
+    disp(G2);
+    disp("Hello wolrd1 cacodeAB");
+    
     tmp = G2(1);
     G2(1) = G2(2)*G2(3)*G2(6)*G2(8)*G2(9)*G2(10);
     G2(2:10)=[tmp G2(2:9)];

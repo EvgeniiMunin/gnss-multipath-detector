@@ -28,8 +28,14 @@ dopp_interv = [-dopp_max:deltaDop:dopp_max];
 %tau_max = 2*Tc;    % Donc +- 2 chips autour du pic
 tau_max_left = Tc
 tau_max_right = 2.5*Tc
+
+disp("Hello wolrd1");
+
 % Le code PRN local
 code_PRN1 = cacodeAB(satNum,Fc,Fs);
+
+disp("Hello wolrd2");
+
 lC = length(code_PRN1);
 % Le nombre de points de correlation sur [0, tau_max]
 Np_left = ceil(tau_max_left*lC/(Nc*Tc));

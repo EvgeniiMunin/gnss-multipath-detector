@@ -135,11 +135,11 @@ class DataSampler:
                     datetime_now = datetime.datetime.now()
                     # save i/q_channel
                     if self.multipath_option:
-                        pathi = save_path + 'mp/channel_i_{}.csv'.format(str(datetime_now))
-                        pathq = save_path + 'mp/channel_q_{}.csv'.format(str(datetime_now))    
+                        pathi = save_path + 'mp/channel_i_{}_{}.csv'.format(str(datetime_now), self.cn0_log)
+                        pathq = save_path + 'mp/channel_q_{}_{}.csv'.format(str(datetime_now), self.cn0_log)    
                     else:
-                        pathi = save_path + 'no_mp/channel_i_{}.csv'.format(str(datetime_now))
-                        pathq = save_path + 'no_mp/channel_q_{}.csv'.format(str(datetime_now))
+                        pathi = save_path + 'no_mp/channel_i_{}_{}.csv'.format(str(datetime_now), self.cn0_log)
+                        pathq = save_path + 'no_mp/channel_q_{}_{}.csv'.format(str(datetime_now), self.cn0_log)
                     print(pathi)
                     np.savetxt(pathi, matr_i[i,...], delimiter=',')
                     np.savetxt(pathq, matr_q[i,...], delimiter=',')
