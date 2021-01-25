@@ -1,5 +1,9 @@
 clear all; %close all;
 
+% Create dirs for i/q channel of noise
+mkdir('outputs/i_channel/')
+mkdir('outputs/q_channel/')
+
 %----LES CONSTANTES GPS--------------------------------------------%
 FL1 = 1575.42e6;
 Fc = 1.023e6; Tc = 1/Fc;
