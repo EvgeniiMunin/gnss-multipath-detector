@@ -4,6 +4,7 @@
 #%autoreload 2
 import argparse
 from data_sampler import DataSampler
+import os
 
 def main():
     
@@ -47,6 +48,8 @@ def main():
     noise_q_path = r'corr_noise_gen/outputs/q_channel/*.csv'
     
     save_path = r'synth_data/discr_{}/'.format(discr_size_fd)
+    os.makedirs(os.path.dirname(save_path + '/no_mp/'), exist_ok=True)
+    os.makedirs(os.path.dirname(save_path + '/mp/'), exist_ok=True)
     
     data_sampler = DataSampler(
                 discr_size_fd=discr_size_fd,
