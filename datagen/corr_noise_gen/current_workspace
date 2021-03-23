@@ -1,4 +1,4 @@
-# Created by Octave 5.2.0, Tue Jan 12 14:21:08 2021 CET <gonzalez@gonzalez-VirtualBox>
+# Created by Octave 4.2.2, Wed Feb 17 06:06:48 2021 CET <evgenii@sunny>
 # name: FL1
 # type: scalar
 1575420000
@@ -41,12 +41,17 @@
 
 # name: Tc
 # type: scalar
-9.7751710654936457e-07
+9.775171065493646e-07
 
 
 # name: Ti
 # type: scalar
 0.001
+
+
+# name: ans
+# type: bool
+1
 
 
 # name: choice
@@ -82,7 +87,7 @@ debug
 
 # name: eps_c
 # type: scalar
-0.00040000000000000002
+0.0004
 
 
 # name: eps_f
@@ -102,7 +107,7 @@ debug
 
 # name: nb_realiz
 # type: scalar
-2
+600
 
 
 # name: satNum
@@ -112,12 +117,12 @@ debug
 
 # name: tau_max_left
 # type: scalar
-9.7751710654936457e-07
+9.775171065493646e-07
 
 
 # name: tau_max_right
 # type: scalar
-2.4437927663734115e-06
+2.443792766373412e-06
 
 
 # name: write_csv
