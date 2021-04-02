@@ -36,7 +36,7 @@ def main():
 
     # multipath intervals
     delta_tau_interv = [delta_tau_min, float(args.tau)]
-    delta_dopp_interv = [-int(args.dopp), int(args.dopp)]
+    delta_dopp_interv = [min(int(args.dopp),-int(args.dopp)), max(int(args.dopp),-int(args.dopp))]
     delta_phase_interv = [delta_phase_min, delta_phase_max]
     alpha_att_interv = [alpha_att_min, alpha_att_max]
 
@@ -51,9 +51,9 @@ def main():
     noise_i_path = r'corr_noise_gen/outputs/snap_debug_noise_sat_01_89x81/*_I.csv'
     noise_q_path = r'corr_noise_gen/outputs/snap_debug_noise_sat_01_89x81/*_Q.csv'
 
-    #save_path = r"synth_data/discr_{}_dopp-{}_delay-{}_cn-{}/".format(discr_size_fd, args.dopp, args.tau, args.cn0)
+    save_path = r"synth_data/discr_{}_dopp-{}_delay-{}_cn-{}/".format(discr_size_fd, args.dopp, args.tau, args.cn0)
     # Modification to put all the signals with same cn0 and delay but with different doppler in a same and unique folder
-    save_path = r"synth_data/discr_{}_delay-{}_cn-{}/".format(discr_size_fd, args.tau, args.cn0)
+    #save_path = r"synth_data/discr_{}_delay-{}_cn-{}/".format(discr_size_fd, args.tau, args.cn0)
     os.makedirs(os.path.dirname(save_path + "/no_mp/"), exist_ok=True)
     os.makedirs(os.path.dirname(save_path + "/mp/"), exist_ok=True)
 
