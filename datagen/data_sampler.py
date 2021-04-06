@@ -44,7 +44,6 @@ class DataSampler:
         else:
             self.delta_dopp_interv = delta_dopp_interv
             self.dopp_label = delta_dopp_interv[1]
-        print("SELF",self.delta_dopp_interv)
         self.alpha_att_interv = alpha_att_interv
         self.delta_phase_interv = delta_phase_interv
 
@@ -145,17 +144,17 @@ class DataSampler:
                     # save i/q_channel
                     if self.multipath_option:
                         pathi = save_path + "mp/channel_i_{}_{}.csv".format(
-                            str(datetime_now), self.cn0_log
+                            str(datetime_now), self.dopp_label
                         )
                         pathq = save_path + "mp/channel_q_{}_{}.csv".format(
-                            str(datetime_now), self.cn0_log
+                            str(datetime_now), self.dopp_label
                         )
                     else:
                         pathi = save_path + "no_mp/channel_i_{}_{}.csv".format(
-                            str(datetime_now), self.cn0_log
+                            str(datetime_now), self.dopp_label
                         )
                         pathq = save_path + "no_mp/channel_q_{}_{}.csv".format(
-                            str(datetime_now), self.cn0_log
+                            str(datetime_now), self.dopp_label
                         )
                     print(pathi)
                     np.savetxt(pathi, matr_i[i, ...], delimiter=",")
