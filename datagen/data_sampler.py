@@ -37,7 +37,14 @@ class DataSampler:
         self.tau = tau
         self.dopp = dopp
         self.delta_tau_interv = delta_tau_interv
-        self.delta_dopp_interv = delta_dopp_interv
+        # Doppler could be negative and we need it as a label
+        if delta_dopp_interv[0] > 0:
+            self.delta_dopp_interv = [delta_dopp_interv[1],delta_dopp_interv[0]]
+            self.dopp_label = delta_dopp_interv[1]
+        else:
+            self.delta_dopp_interv = delta_dopp_interv
+            self.dopp_label = delta_dopp_interv[1]
+        print("SELF",self.delta_dopp_interv)
         self.alpha_att_interv = alpha_att_interv
         self.delta_phase_interv = delta_phase_interv
 
@@ -133,6 +140,7 @@ class DataSampler:
             if save_csv:
                 for i in range(matr_i.shape[0]):
                     print("---------- EXAMPLE {} --------".format(i))
+                    print("DopPLER3",self.delta_dopp_interv,self.dopp_label)
                     datetime_now = datetime.datetime.now()
                     # save i/q_channel
                     if self.multipath_option:
