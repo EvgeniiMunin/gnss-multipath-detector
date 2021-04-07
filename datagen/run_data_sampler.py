@@ -22,11 +22,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mp", required=True, default=0)
     parser.add_argument("--nb_samples", required=True, default=1)
-    parser.add_argument("--dopp", required=True, default=0)
+    parser.add_argument("--dopp", required=False, default=0)
     parser.add_argument("--tau", required=False, default=1)
     parser.add_argument("--cn0", required=False, default=50)
     parser.add_argument("--discr", required=True, default=1)
-    parser.add_argument("--phase", required=True, default=0)
+    parser.add_argument("--phase", required=False, default=0)
     args = parser.parse_args()
 
     multipath_option = False if args.mp == "0" else True
@@ -41,13 +41,16 @@ def main():
     tau = random.uniform(0,1.5)/1023
     delta_tau_interv = [tau,tau]
     #delta_dopp_interv = [-int(args.dopp),int(args.dopp)]
-    delta_dopp_interv = [int(args.dopp),int(args.dopp)]
+    dopp = random.randint(-250,250)
+    delta_dopp_interv = [dopp,dopp]
     #delta_phase_interv = [delta_phase_min, delta_phase_max]
-    delta_phase_interv = [float(args.phase),float(args.phase)]
+    phase = random.uniform(0,2*np.pi)
+    delta_phase_interv = [phase,phase]
     alpha_att_interv = [alpha_att_min, alpha_att_max]
 
     #cn0_log = int(args.cn0)
     cn0_log = random.uniform(37,47)
+    print('parameters','delay',tau,'doppler',dopp,'phase',phase,'cn0',cn0_log)
 
     # code/ doppler interval
     dopp_interval = [-dopp_max, dopp_max]
