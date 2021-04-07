@@ -40,10 +40,8 @@ class DataSampler:
         # Doppler could be negative and we need it as a label
         if delta_dopp_interv[0] > 0:
             self.delta_dopp_interv = [delta_dopp_interv[1],delta_dopp_interv[0]]
-            self.dopp_label = delta_dopp_interv[1]
         else:
             self.delta_dopp_interv = delta_dopp_interv
-            self.dopp_label = delta_dopp_interv[1]
         self.alpha_att_interv = alpha_att_interv
         self.delta_phase_interv = delta_phase_interv
 
@@ -111,9 +109,10 @@ class DataSampler:
         self.i_samples = np.array(list(map(sample_i_func, samples)))
         self.q_samples = np.array(list(map(sample_q_func, samples)))
 
-    def sum_matr(self, save_csv=True, save_path=None):
-        # check matrices shapes
 
+    def sum_matr(self, save_csv=True, save_path=None):
+
+        # check matrices shapes
         try:
             # check correspondance among arrays shapes
             if (self.i_samples.shape[1] != self.noise_i_samples.shape[1]) or (
@@ -139,22 +138,23 @@ class DataSampler:
             if save_csv:
                 for i in range(matr_i.shape[0]):
                     print("---------- EXAMPLE {} --------".format(i))
-                    print("DopPLER3",self.delta_dopp_interv,self.dopp_label)
                     datetime_now = datetime.datetime.now()
                     # save i/q_channel
                     if self.multipath_option:
-                        pathi = save_path + "mp/channel_i_{}_{}.csv".format(
-                            str(datetime_now), self.dopp_label
+                        pathi = save_path + "mp/channel_i_{}_{}_{}_{}.csv".format(
+                            str(datetime_now), ("%.6f" % self.delta_tau_interv[1]), 
+                            str(self.delta_dopp_interv[1]).zfill(4), ("%.6f" % self.delta_phase_interv[1])
                         )
-                        pathq = save_path + "mp/channel_q_{}_{}.csv".format(
-                            str(datetime_now), self.dopp_label
+                        pathq = save_path + "mp/channel_q_{}_{}_{}_{}.csv".format(
+                            str(datetime_now), ("%.6f" % self.delta_tau_interv[1]),
+                            str(self.delta_dopp_interv[1]).zfill(4), ("%.6f" % self.delta_phase_interv[1])
                         )
                     else:
                         pathi = save_path + "no_mp/channel_i_{}_{}.csv".format(
-                            str(datetime_now), self.dopp_label
+                            str(datetime_now), self.delta_dopp_interv[1]
                         )
                         pathq = save_path + "no_mp/channel_q_{}_{}.csv".format(
-                            str(datetime_now), self.dopp_label
+                            str(datetime_now), self.delta_dopp_interv[1]
                         )
                     print(pathi)
                     np.savetxt(pathi, matr_i[i, ...], delimiter=",")
@@ -163,6 +163,7 @@ class DataSampler:
                 return matr_i, matr_q
 
         except ValueError:
+            print("TEST yes ValueError",ValueError)
             print(
                 "Wrong arrays shapes: sampels: {}, {}; noise samples {}, {}".format(
                     self.i_samples.shape,
