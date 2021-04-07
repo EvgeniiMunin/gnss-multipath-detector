@@ -152,9 +152,9 @@ class CorrDatasetV2:
             delta_taui = np.random.uniform(
                 low=self.delta_tau_interv[0], high=self.delta_tau_interv[1]
             )
-            delta_doppi = np.random.normal(
-                0, self.delta_dopp_interv[1]
-            )
+            # delta_doppi = np.random.normal(0, self.delta_dopp_interv[1])
+            # modification for doppler labelling
+            delta_doppi = self.delta_dopp_interv[1]
             delta_phasei = np.random.uniform(
                 low=self.delta_phase_interv[0], high=self.delta_phase_interv[1]
             )
