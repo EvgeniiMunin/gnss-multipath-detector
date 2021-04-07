@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--mp", required=True, default=0)
     parser.add_argument("--nb_samples", required=True, default=1)
     parser.add_argument("--dopp", required=True, default=0)
-    parser.add_argument("--tau", required=True, default=1)
+    parser.add_argument("--tau", required=False, default=1)
     parser.add_argument("--cn0", required=False, default=50)
     parser.add_argument("--discr", required=True, default=1)
     parser.add_argument("--phase", required=True, default=0)
@@ -38,7 +38,8 @@ def main():
 
     # multipath intervals
     #delta_tau_interv = [delta_tau_min, float(args.tau)]
-    delta_tau_interv = [float(args.tau),float(args.tau)]
+    tau = random.uniform(0,1.5)/1023
+    delta_tau_interv = [tau,tau]
     #delta_dopp_interv = [-int(args.dopp),int(args.dopp)]
     delta_dopp_interv = [int(args.dopp),int(args.dopp)]
     #delta_phase_interv = [delta_phase_min, delta_phase_max]
