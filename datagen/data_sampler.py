@@ -142,11 +142,11 @@ class DataSampler:
                     # save i/q_channel
                     if self.multipath_option:
                         pathi = save_path + "mp/channel_i_{}_{}_{}_{}.csv".format(
-                            str(datetime_now), ("%.6f" % self.delta_tau_interv[1]), 
+                            str(datetime_now), ("%.9f" % self.delta_tau_interv[1]), 
                             str(self.delta_dopp_interv[1]).zfill(4), ("%.6f" % self.delta_phase_interv[1])
                         )
                         pathq = save_path + "mp/channel_q_{}_{}_{}_{}.csv".format(
-                            str(datetime_now), ("%.6f" % self.delta_tau_interv[1]),
+                            str(datetime_now), ("%.9f" % self.delta_tau_interv[1]),
                             str(self.delta_dopp_interv[1]).zfill(4), ("%.6f" % self.delta_phase_interv[1])
                         )
                     else:
