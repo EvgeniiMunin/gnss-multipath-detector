@@ -13,10 +13,13 @@
 #cd ..
 cd datagen/
 
-for i in `seq 1 5`;
+for i in `seq 1 50000`;
 do
 	#python3 run_data_sampler.py --mp=0 --nb_samples=1 --dopp=200 --tau=1.5 --cn0=43 --discr=80	
 	python3 run_data_sampler.py --mp=1 --nb_samples=1 --discr=80
+	echo "...iteration..."
+	echo $i
+	echo "..............."
 done
 #=======
 #cd datagen/corr_noise_gen/
