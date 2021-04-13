@@ -41,7 +41,7 @@ def main():
     tau = random.uniform(0,1.5)/1023
     delta_tau_interv = [tau,tau]
     #delta_dopp_interv = [-int(args.dopp),int(args.dopp)]
-    dopp = random.randint(-250,250)
+    dopp = random.normal(0,250/3)
     delta_dopp_interv = [dopp,dopp]
     #delta_phase_interv = [delta_phase_min, delta_phase_max]
     phase = random.uniform(0,2*np.pi)
