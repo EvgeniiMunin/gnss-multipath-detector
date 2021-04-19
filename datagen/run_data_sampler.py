@@ -38,10 +38,10 @@ def main():
 
     # multipath intervals
     #delta_tau_interv = [delta_tau_min, float(args.tau)]
-    tau = random.uniform(0,1.5)/1023
+    tau = random.uniform(0,1.5)/1023/1000
     delta_tau_interv = [tau,tau]
     #delta_dopp_interv = [-int(args.dopp),int(args.dopp)]
-    dopp = random.normal(0,250/3)
+    dopp = int(np.random.normal(0,250/3))
     delta_dopp_interv = [dopp,dopp]
     #delta_phase_interv = [delta_phase_min, delta_phase_max]
     phase = random.uniform(0,2*np.pi)
