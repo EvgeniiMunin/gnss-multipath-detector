@@ -38,10 +38,10 @@ def main():
 
     # multipath intervals
     #delta_tau_interv = [delta_tau_min, float(args.tau)]
-    tau = random.uniform(0,1.5)/1023
+    tau = random.uniform(0,1.5)/1023/1000
     delta_tau_interv = [tau,tau]
     #delta_dopp_interv = [-int(args.dopp),int(args.dopp)]
-    dopp = random.normalvariate(0,250/3)
+    dopp = int(random.normalvariate(0,250/3))
     delta_dopp_interv = [dopp,dopp]
     #delta_phase_interv = [delta_phase_min, delta_phase_max]
     phase = random.uniform(0,2*np.pi)
@@ -64,8 +64,10 @@ def main():
     #save_path = r"synth_data/discr_{}_dopp-{}_delay-{}_cn-{}/".format(discr_size_fd, args.dopp, args.tau, args.cn0)
     # Modification to put all the signals with same cn0 and delay but with different doppler in a same and unique folder
     save_path = r"synth_data/experiences/"
-    os.makedirs(os.path.dirname(save_path + "/no_mp/"), exist_ok=True)
-    os.makedirs(os.path.dirname(save_path + "/mp/"), exist_ok=True)
+    os.makedirs(os.path.dirname(save_path + "/no_mp/Voie_I/"), exist_ok=True)
+    os.makedirs(os.path.dirname(save_path + "/no_mp/Voie_Q/"), exist_ok=True)
+    os.makedirs(os.path.dirname(save_path + "/mp/Voie_I/"), exist_ok=True)
+    os.makedirs(os.path.dirname(save_path + "/mp/Voie_Q/"), exist_ok=True)
     
     data_sampler = DataSampler(
         discr_size_fd=discr_size_fd,
