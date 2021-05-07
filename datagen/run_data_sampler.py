@@ -24,7 +24,7 @@ def main():
     parser.add_argument("--nb_samples", required=True, default=1)
     parser.add_argument("--dopp", required=False, default=0)
     parser.add_argument("--tau", required=False, default=1)
-    parser.add_argument("--cn0", required=False, default=90)
+    parser.add_argument("--cn0", required=False, default=50)
     parser.add_argument("--discr", required=True, default=1)
     parser.add_argument("--phase", required=False, default=0)
     args = parser.parse_args()
@@ -48,8 +48,8 @@ def main():
     delta_phase_interv = [phase,phase]
     alpha_att_interv = [alpha_att_min, alpha_att_max]
 
-    cn0_log = int(args.cn0)
-    # cn0_log = random.uniform(37,47)
+    #cn0_log = int(args.cn0)
+    cn0_log = random.uniform(37,47)
     print('parameters','delay',tau,'doppler',dopp,'phase',phase,'cn0',cn0_log)
 
     # code/ doppler interval
