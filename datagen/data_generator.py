@@ -101,8 +101,8 @@ class CorrDatasetV2:
         # navigation bit
         bit_nav = np.random.choice([-1, 1])
         mp_bit_nav = np.random.choice([-1, 1])
-        bit_nav = -1
-        mp_bit_nav = 1
+        #bit_nav = -1
+        #mp_bit_nav = 1
 
         # Generate triangle function
         func1 = bit_nav * self.sign_amp * signal.triang(self.scale_code // 2)
