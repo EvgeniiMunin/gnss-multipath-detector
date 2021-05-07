@@ -16,7 +16,7 @@ class DataSampler:
         self,
         discr_size_fd,
         scale_code,
-        Tint=10 ** -3,
+        Tint=20 ** -3,
         multipath_option=False,
         delta_tau_interv=None,
         delta_dopp_interv=None,
@@ -56,32 +56,41 @@ class DataSampler:
         fake_noise_generator = FakeNoiseDataset()
 
         # read i channel
-        paths = np.array(glob.glob(i_path))
-        ids = np.random.randint(0, len(paths) - 1, nb_samples).astype(int)
-        self.noise_i_samples = fake_noise_generator.build(
-            paths[ids], discr_shape=matrix_shape
-        )
+        # paths = np.array(glob.glob(i_path))
+        # ids = np.random.randint(0, len(paths) - 1, nb_samples).astype(int)
+        # self.noise_i_samples = fake_noise_generator.build(
+        #     paths[ids], discr_shape=matrix_shape
+        # )
         # read q channel
-        paths = np.array(glob.glob(q_path))
-        ids = np.random.randint(0, len(paths) - 1, nb_samples).astype(int)
-        self.noise_q_samples = fake_noise_generator.build(
-            paths[ids], discr_shape=matrix_shape
-        )
+        # paths = np.array(glob.glob(q_path))
+        # ids = np.random.randint(0, len(paths) - 1, nb_samples).astype(int)
+        # self.noise_q_samples = fake_noise_generator.build(
+        #     paths[ids], discr_shape=matrix_shape
+        # )
 
+        # Les fichiers I et Q sont appairés !
+        paths_i = np.array(glob.glob(i_path))
+        paths_q = np.array(glob.glob(q_path))
+        ids = np.random.randint(0, len(paths_i) - 1, nb_samples).astype(int)
+        self.noise_i_samples = fake_noise_generator.build(
+            paths_i[ids], discr_shape=matrix_shape)
+        self.noise_q_samples = fake_noise_generator.build(
+            paths_q[ids], discr_shape=matrix_shape)
+        
         # compute noise factor
-        p = (self.noise_i_samples[0] ** 2 + self.noise_q_samples[0] ** 2).max()
+        # C'est l'amplitude max du signal qu'on veut (C), pas celle du bruit
+        # p = (self.noise_i_samples[0] ** 2 + self.noise_q_samples[0] ** 2).max()
+        p = 1;
         var_i = np.var(self.noise_i_samples[0])
-        var_q = np.var(self.noise_q_samples[0])
         noise_factor_i = np.sqrt(p / (2 * var_i * self.Tint * self.cn0)) * NOISE_COEF
-        noise_factor_q = np.sqrt(p / (2 * var_q * self.Tint * self.cn0)) * NOISE_COEF
 
         # rotate noise vector by 90 degs
         self.noise_i_samples = np.rot90(self.noise_i_samples, axes=(1, 2))
-        self.noise_q_samples = np.rot90(self.noise_i_samples, axes=(1, 2))
+        self.noise_q_samples = np.rot90(self.noise_q_samples, axes=(1, 2))
 
         # apply noise factor
         self.noise_i_samples *= noise_factor_i
-        self.noise_q_samples *= noise_factor_q
+        self.noise_q_samples *= noise_factor_i
 
         self.noise_i_samples = np.transpose(self.noise_i_samples, [0, 2, 1])
         self.noise_q_samples = np.transpose(self.noise_q_samples, [0, 2, 1])
@@ -141,19 +150,19 @@ class DataSampler:
                     datetime_now = datetime.datetime.now()
                     # save i/q_channel
                     if self.multipath_option:
-                        pathi = save_path + "mp/Voie_I/channel_i_{}_{}_{}_{}_{}.csv".format(
-                            str(datetime_now), ("%.9f" % self.delta_tau_interv[1]),("%.2f" % self.cn0_log), 
+                        pathi = save_path + "mp/channel_i_{}_{}_{}_{}.csv".format(
+                            str(datetime_now), ("%.9f" % self.delta_tau_interv[1]), 
                             str(self.delta_dopp_interv[1]).zfill(4), ("%.6f" % self.delta_phase_interv[1])
                         )
-                        pathq = save_path + "mp/Voie_Q/channel_q_{}_{}_{}_{}_{}.csv".format(
-                            str(datetime_now), ("%.9f" % self.delta_tau_interv[1]),("%.2f" % self.cn0_log),
+                        pathq = save_path + "mp/channel_q_{}_{}_{}_{}.csv".format(
+                            str(datetime_now), ("%.9f" % self.delta_tau_interv[1]),
                             str(self.delta_dopp_interv[1]).zfill(4), ("%.6f" % self.delta_phase_interv[1])
                         )
                     else:
-                        pathi = save_path + "no_mp/Voie_I/channel_i_{}_{}.csv".format(
+                        pathi = save_path + "no_mp/channel_i_{}_{}.csv".format(
                             str(datetime_now), self.delta_dopp_interv[1]
                         )
-                        pathq = save_path + "no_mp/Voie_Q/channel_q_{}_{}.csv".format(
+                        pathq = save_path + "no_mp/channel_q_{}_{}.csv".format(
                             str(datetime_now), self.delta_dopp_interv[1]
                         )
                     print(pathi)

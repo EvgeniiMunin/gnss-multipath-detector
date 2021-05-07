@@ -101,8 +101,8 @@ class CorrDatasetV2:
         # navigation bit
         bit_nav = np.random.choice([-1, 1])
         mp_bit_nav = np.random.choice([-1, 1])
-        # bit_nav = 1
-        # mp_bit_nav = 1
+        bit_nav = -1
+        mp_bit_nav = 1
 
         # Generate triangle function
         func1 = bit_nav * self.sign_amp * signal.triang(self.scale_code // 2)
@@ -186,13 +186,19 @@ class CorrDatasetV2:
                 )
 
             module = np.sqrt(matrix[..., 0] ** 2 + matrix[..., 1] ** 2)
-            matrix[..., 0] = (matrix[..., 0] - module.min()) / (
-                module.max() - module.min()
-            )
-            matrix[..., 1] = (matrix[..., 1] - module.min()) / (
-                module.max() - module.min()
-            )
-            module = (module - module.min()) / (module.max() - module.min())
+            # matrix[..., 0] = (matrix[..., 0] - module.min()) / (
+                # module.max() - module.min()
+            # )
+            max_amp_I = max(abs(matrix[..., 0].min()),matrix[..., 0].max())
+            matrix[..., 0] = matrix[..., 0]/max_amp_I
+            # matrix[..., 1] = (matrix[..., 1] - module.min()) / (
+                # module.max() - module.min()
+            # )
+            # Est-ce-qu'il ne vaudrait pas mieux faire la normalisation sur
+            # l'image avant ajout du multitrajet ?
+            matrix[..., 1] = matrix[..., 1]/max_amp_I
+            # module = (module - module.min()) / (module.max() - module.min())
+            module = np.sqrt(matrix[..., 0] ** 2 + matrix[..., 1] ** 2)
 
             data["table"] = matrix
             data["module"] = module[..., None]
@@ -218,9 +224,10 @@ class FakeNoiseDataset:
             noise_matr = self.__preprocess__(path)
 
             # scale noise matrix
-            noise_matr = (noise_matr - noise_matr.min()) / (
-                noise_matr.max() - noise_matr.min()
-            )
+            # noise_matr = (noise_matr - noise_matr.min()) / (
+                # noise_matr.max() - noise_matr.min()
+            # )
+            # noise_matr = noise_matr/max(abs(noise_matr.min()),noise_matr.max())
             noise_data.append(noise_matr)
         return np.array(noise_data)
 
