@@ -150,19 +150,19 @@ class DataSampler:
                     datetime_now = datetime.datetime.now()
                     # save i/q_channel
                     if self.multipath_option:
-                        pathi = save_path + "mp/channel_i_{}_{}_{}_{}.csv".format(
+                        pathi = save_path + "mp/Voie_I/channel_i_{}_{}_{}_{}.csv".format(
                             str(datetime_now), ("%.9f" % self.delta_tau_interv[1]), 
                             str(self.delta_dopp_interv[1]).zfill(4), ("%.6f" % self.delta_phase_interv[1])
                         )
-                        pathq = save_path + "mp/channel_q_{}_{}_{}_{}.csv".format(
+                        pathq = save_path + "mp/Voie_Q/channel_q_{}_{}_{}_{}.csv".format(
                             str(datetime_now), ("%.9f" % self.delta_tau_interv[1]),
                             str(self.delta_dopp_interv[1]).zfill(4), ("%.6f" % self.delta_phase_interv[1])
                         )
                     else:
-                        pathi = save_path + "no_mp/channel_i_{}_{}.csv".format(
+                        pathi = save_path + "no_mp/Voie_I/channel_i_{}_{}.csv".format(
                             str(datetime_now), self.delta_dopp_interv[1]
                         )
-                        pathq = save_path + "no_mp/channel_q_{}_{}.csv".format(
+                        pathq = save_path + "no_mp/Voie_Q/channel_q_{}_{}.csv".format(
                             str(datetime_now), self.delta_dopp_interv[1]
                         )
                     print(pathi)
